@@ -109,15 +109,13 @@ export default function PartnerSelectScreen({
                     !
                   </span>
                 )}
-                <div className={`mx-auto rounded-full p-1 border-2 ${getTypeBorderColor(mon.type)} inline-block`}>
-                  <img 
-                    src={getGifUrl(mon.currentName)} 
-                    alt={mon.currentName}
-                    className="mx-auto" 
-                    style={{ width: '56px', height: '56px', imageRendering: 'pixelated' }}
-                    onError={(e) => { e.target.onerror = null; e.target.src = getGifUrl("Placeholder"); }}
-                  />
-                </div>
+                <img 
+                  src={getGifUrl(mon.currentName)} 
+                  alt={mon.currentName}
+                  className="mx-auto" 
+                  style={{ width: '56px', height: '56px', imageRendering: 'pixelated' }}
+                  onError={(e) => { e.target.onerror = null; e.target.src = getGifUrl("Placeholder"); }}
+                />
                 <p className="text-xs mt-1">{mon.currentName}</p>
                 {/* EXP Display */}
                 {evoData && evoData.evoExp !== -1 ? (

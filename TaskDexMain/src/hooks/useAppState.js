@@ -12,6 +12,7 @@ export function useAppState() {
   const [loading, setLoading] = useState(true);
   const [authReady, setAuthReady] = useState(false);
   const [sessionConfig, setSessionConfig] = useState(null);
+  const [tasks, setTasks] = useState([]);
 
   // Initialize Firebase Auth listener
   useEffect(() => {
@@ -19,9 +20,14 @@ export function useAppState() {
       // Firebase not available, use local storage
       const data = initializeUserData();
       setUserData(data);
+      if (data.tasks) {
+        setTasks(data.tasks);
+      } else {
+        setTasks([]);
+      }
       setLoading(false);
       if (data.isProfileComplete) {
-        setScreen('MAIN_MENU');
+        setScreen('TASKS_SCREEN');
       } else {
         setScreen('STARTER_SELECT');
       }
@@ -55,11 +61,17 @@ export function useAppState() {
       if (docSnap.exists()) {
         const data = docSnap.data();
         setUserData(data);
+        // Load tasks from userData
+        if (data.tasks) {
+          setTasks(data.tasks);
+        } else {
+          setTasks([]);
+        }
         
         // Auto-redirect based on profile completion
         if (screen === 'WELCOME' || screen === 'LOGIN_SIGNUP' || screen === 'STARTER_SELECT') {
           if (data.isProfileComplete) {
-            setScreen('MAIN_MENU');
+            setScreen('TASKS_SCREEN');
           } else {
             setScreen('STARTER_SELECT');
           }
@@ -67,6 +79,7 @@ export function useAppState() {
       } else {
         // User logged in but no data - will be created by AuthScreen
         setUserData(null);
+        setTasks([]);
       }
     }, (error) => {
       console.error("Error fetching user data:", error);
@@ -124,6 +137,9 @@ export function useAppState() {
 
   // Logout handler
   const handleLogout = useCallback(async () => {
+    // Clear session storage so welcome message shows again on next login
+    sessionStorage.removeItem('hasSeenWelcome');
+    
     if (app) {
       try {
         const auth = getAuth(app);
@@ -571,5 +587,27 @@ export function useAppState() {
     setSessionConfig,
     handleSessionComplete,
     saveCaughtPokemon,
+    tasks,
+    setTasks: (newTasks) => {
+      setTasks(newTasks);
+      // Save to Firestore or localStorage
+      if (!user || !db) {
+        // Fallback to localStorage
+        const updatedData = {
+          ...userData,
+          tasks: newTasks
+        };
+        saveUserData(updatedData);
+        setUserData(updatedData);
+      } else {
+        // Save to Firestore
+        const userDocRef = doc(db, 'artifacts', 'default-app-id', 'users', user.uid, 'profile', 'data');
+        updateDoc(userDocRef, {
+          tasks: newTasks
+        }).catch((error) => {
+          console.error("Error saving tasks:", error);
+        });
+      }
+    },
   };
 }

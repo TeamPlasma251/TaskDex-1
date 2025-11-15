@@ -10,10 +10,10 @@ import EncounterScreen from './components/EncounterScreen.jsx';
 import PokedexViewScreen from './components/PokedexViewScreen.jsx';
 import FriendsListScreen from './components/FriendsListScreen.jsx';
 import AchievementsViewScreen from './components/AchievementsViewScreen.jsx';
-import GlobalProfileIcon from './components/GlobalProfileIcon.jsx';
 import PartnerSelectScreen from './components/PartnerSelectScreen.jsx';
 import GroupLobbyScreen from './components/GroupLobbyScreen.jsx';
 import TopNavigationBar from './components/TopNavigationBar.jsx';
+import TasksScreen from './components/TasksScreen.jsx';
 
 function App() {
   const {
@@ -33,6 +33,8 @@ function App() {
     setSessionConfig,
     handleSessionComplete,
     saveCaughtPokemon,
+    tasks,
+    setTasks,
   } = useAppState();
 
   if (loading) {
@@ -59,7 +61,16 @@ function App() {
         return <StarterSelectScreen saveNewUser={saveNewUser} setScreen={setScreen} userData={userData} />;
       
       case 'MAIN_MENU':
-        return <MainMenuScreen setScreen={setScreen} userData={userData} setSessionConfig={setSessionConfig} />;
+        // Redirect to Tasks screen instead of showing MainMenuScreen
+        return (
+          <TasksScreen 
+            setScreen={setScreen} 
+            userData={userData} 
+            tasks={tasks}
+            setTasks={setTasks}
+            setSessionConfig={setSessionConfig}
+          />
+        );
       
       case 'PARTNER_SELECT_SCREEN':
         return (
@@ -119,8 +130,28 @@ function App() {
       case 'GROUP_LOBBY':
         return <GroupLobbyScreen setScreen={setScreen} />;
       
+      case 'TASKS_SCREEN':
+        return (
+          <TasksScreen 
+            setScreen={setScreen} 
+            userData={userData} 
+            tasks={tasks}
+            setTasks={setTasks}
+            setSessionConfig={setSessionConfig}
+          />
+        );
+      
       default:
-        return <MainMenuScreen setScreen={setScreen} userData={userData} setSessionConfig={setSessionConfig} />;
+        // Default to Tasks screen
+        return (
+          <TasksScreen 
+            setScreen={setScreen} 
+            userData={userData} 
+            tasks={tasks}
+            setTasks={setTasks}
+            setSessionConfig={setSessionConfig}
+          />
+        );
     }
   };
 
@@ -129,10 +160,6 @@ function App() {
       {/* Top Navigation Bar */}
       {userData && screen !== 'WELCOME' && screen !== 'LOGIN_SIGNUP' && screen !== 'STARTER_SELECT' && (
         <TopNavigationBar setScreen={setScreen} userData={userData} currentScreen={screen} />
-      )}
-      {/* Render the global icon *unless* on a setup/login screen */}
-      {userData && screen !== 'WELCOME' && screen !== 'LOGIN_SIGNUP' && screen !== 'STARTER_SELECT' && (
-        <GlobalProfileIcon setScreen={setScreen} userData={userData} />
       )}
       {renderScreen()}
     </div>
