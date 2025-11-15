@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function WelcomeScreen({ setScreen }) {
   return (
-    <div className="min-h-screen bg-[#f5f5dc] font-pixel">
+    <div className="min-h-screen bg-[#f5f5dc]">
       {/* Header/Navigation */}
       <header className="bg-[#2d2d2d] text-white px-6 py-4 flex justify-between items-center">
         <div className="flex items-center space-x-3">

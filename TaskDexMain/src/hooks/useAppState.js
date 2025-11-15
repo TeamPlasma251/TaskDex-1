@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
-import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc, deleteField } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc, deleteField, runTransaction } from 'firebase/firestore';
 import { app, db } from '../config/firebase.js';
 import { getUserData, saveUserData, initializeUserData } from '../utils/storage.js';
 import { getPokemonDataByName, getRandomWildPokemon, POKEMON_DATA } from '../data/pokemonData.js';
@@ -152,10 +152,16 @@ export function useAppState() {
     };
 
     try {
-      // 3. Create master lists
+      // 3. Create master lists, preserving existing pokemon data
       const allNames = new Set(POKEMON_DATA.list.map(p => p.name));
       const masterPokedex = [];
       const masterInventory = [];
+      
+      // Create a map of existing pokemon by pokedexId for quick lookup
+      const existingPokemonMap = new Map();
+      userData.pokemon_inventory.forEach(mon => {
+        existingPokemonMap.set(mon.pokedexId, mon);
+      });
       
       for (const name of allNames) {
         const p = getPokemonDataByName(name);
@@ -163,34 +169,50 @@ export function useAppState() {
         // Add to Pokedex
         masterPokedex.push({ id: p.id, name: p.name });
         
-        // Add to Inventory
-        masterInventory.push({
-          id: crypto.randomUUID(),
-          pokedexId: p.id,
-          name: p.name,
-          type: p.type,
-          exp: 0, 
-          stage: p.evoStage,
-          currentName: p.name,
-          isPartner: false // Set all to false initially
-        });
+        // Check if this pokemon already exists in inventory
+        const existingMon = existingPokemonMap.get(p.id);
+        
+        if (existingMon) {
+          // Preserve existing pokemon data (XP, stage, currentName, isPartner)
+          masterInventory.push({
+            id: existingMon.id, // Keep the same ID
+            pokedexId: p.id,
+            name: p.name,
+            type: p.type,
+            exp: existingMon.exp || 0, // Preserve XP
+            stage: existingMon.stage !== undefined ? existingMon.stage : p.evoStage,
+            currentName: existingMon.currentName || p.name, // Preserve evolved name
+            isPartner: existingMon.isPartner || false // Preserve partner status
+          });
+        } else {
+          // New pokemon - create fresh entry
+          masterInventory.push({
+            id: crypto.randomUUID(),
+            pokedexId: p.id,
+            name: p.name,
+            type: p.type,
+            exp: 0, 
+            stage: p.evoStage,
+            currentName: p.name,
+            isPartner: false
+          });
+        }
       }
 
-      // 4. Find the *newly created* instance of the old partner
-      let partnerAssigned = false;
-      if (currentPartnerId) {
+      // 4. Ensure partner is preserved (should already be preserved from above, but double-check)
+      const partnerInNewInventory = masterInventory.find(p => p.isPartner);
+      if (!partnerInNewInventory && currentPartnerId) {
         const oldPartnerData = userData.pokemon_inventory.find(p => p.id === currentPartnerId);
         if (oldPartnerData) {
           const newPartnerInstance = masterInventory.find(p => p.pokedexId === oldPartnerData.pokedexId);
           if (newPartnerInstance) {
             newPartnerInstance.isPartner = true;
-            partnerAssigned = true;
           }
         }
       }
 
       // 5. Failsafe if partner wasn't found
-      if (!partnerAssigned && masterInventory.length > 0) {
+      if (!masterInventory.find(p => p.isPartner) && masterInventory.length > 0) {
         // Default to the first Pokémon in the list (Bulbasaur)
         masterInventory[0].isPartner = true;
       }
@@ -325,41 +347,68 @@ export function useAppState() {
       }
     }
 
-    // Update Partner EXP
-    let updatedInventory = [...userData.pokemon_inventory];
-    let partnerIndex = updatedInventory.findIndex(p => p.isPartner);
-
-    if (partnerIndex !== -1) {
-      let partner = updatedInventory[partnerIndex];
-      const evoData = getPokemonDataByName(partner.currentName);
-      
-      // Only add EXP if the pokemon is not max level (evoExp === -1)
-      // and not already waiting to evolve
-      if (evoData && evoData.evoExp !== -1 && partner.exp < evoData.evoExp) {
-        partner.exp = (partner.exp || 0) + expGain;
-      }
-      
-      updatedInventory[partnerIndex] = partner;
-    }
-
-    const updatedData = {
-      ...userData,
-      pokemon_inventory: updatedInventory,
-    };
-
-    // Save to Firestore if user is logged in
+    // Use transaction if Firebase is available
     if (user && db) {
       try {
-        const userDocRef = doc(db, 'artifacts', 'default-app-id', 'users', user.uid, 'profile', 'data');
-        await setDoc(userDocRef, updatedData, { merge: true });
-      } catch (error) {
-        console.error("Error saving to Firestore:", error);
+        await runTransaction(db, async (transaction) => {
+          const userDocRef = doc(db, 'artifacts', 'default-app-id', 'users', user.uid, 'profile', 'data');
+          const userDoc = await transaction.get(userDocRef);
+          
+          if (!userDoc.exists) {
+            throw new Error("User document does not exist!");
+          }
+          
+          let currentData = userDoc.data();
+          let updatedInventory = [...currentData.pokemon_inventory];
+          let updatedPokedex = [...currentData.pokedex];
+          let partnerIndex = updatedInventory.findIndex(p => p.isPartner);
+          
+          // Update Partner EXP
+          if (partnerIndex !== -1) {
+            let partner = updatedInventory[partnerIndex];
+            const evoData = getPokemonDataByName(partner.currentName);
+            
+            // Only add EXP if the pokemon is not max level (evoExp === -1)
+            // and not already waiting to evolve
+            if (evoData && evoData.evoExp !== -1 && partner.exp < evoData.evoExp) {
+              partner.exp = (partner.exp || 0) + expGain;
+            }
+            
+            updatedInventory[partnerIndex] = partner;
+          }
+          
+          transaction.update(userDocRef, {
+            pokemon_inventory: updatedInventory,
+            pokedex: updatedPokedex,
+          });
+        });
+      } catch (e) {
+        console.error("Transaction failed: ", e);
       }
-    }
+    } else {
+      // Fallback to local storage update
+      let updatedInventory = [...userData.pokemon_inventory];
+      let partnerIndex = updatedInventory.findIndex(p => p.isPartner);
 
-    // Also save to localStorage
-    saveUserData(updatedData);
-    setUserData(updatedData);
+      if (partnerIndex !== -1) {
+        let partner = updatedInventory[partnerIndex];
+        const evoData = getPokemonDataByName(partner.currentName);
+        
+        if (evoData && evoData.evoExp !== -1 && partner.exp < evoData.evoExp) {
+          partner.exp = (partner.exp || 0) + expGain;
+        }
+        
+        updatedInventory[partnerIndex] = partner;
+      }
+
+      const updatedData = {
+        ...userData,
+        pokemon_inventory: updatedInventory,
+      };
+
+      saveUserData(updatedData);
+      setUserData(updatedData);
+    }
 
     setSessionConfig({
       ...sessionConfig,
@@ -375,61 +424,132 @@ export function useAppState() {
 
     let hasNewPokemon = false;
     let hasEvolved = false;
-    let updatedInventory = [...userData.pokemon_inventory];
-    let updatedPokedex = [...userData.pokedex];
 
-    // Partner Evolution Check (just flag, don't auto-evolve)
-    let partnerIndex = updatedInventory.findIndex(p => p.isPartner);
-    if (partnerIndex !== -1) {
-      let partner = updatedInventory[partnerIndex];
-      const evoData = getPokemonDataByName(partner.currentName);
-      
-      if (evoData && evoData.evoExp !== -1 && partner.exp >= evoData.evoExp) {
-        // Partner is ready to evolve, set the flag
-        hasEvolved = true;
-      }
-    }
-
-    // Catching Wild Pokémon
-    caughtMonNames.forEach(name => {
-      const wildMonData = getPokemonDataByName(name);
-      const isNew = !updatedPokedex.some(p => p.name === name);
-      if (isNew) {
-        updatedPokedex.push({ id: wildMonData.id, name: name });
-        hasNewPokemon = true;
-      }
-
-      updatedInventory.push({
-        id: crypto.randomUUID(),
-        pokedexId: wildMonData.id,
-        name: name,
-        type: wildMonData.type,
-        exp: Math.floor(expGain / 3), // Floor the EXP
-        stage: wildMonData.evoStage,
-        currentName: name,
-        isPartner: false,
-      });
-    });
-
-    const updatedData = {
-      ...userData,
-      pokemon_inventory: updatedInventory,
-      pokedex: updatedPokedex,
-    };
-
-    // Save to Firestore if user is logged in
+    // Use transaction if Firebase is available
     if (user && db) {
       try {
-        const userDocRef = doc(db, 'artifacts', 'default-app-id', 'users', user.uid, 'profile', 'data');
-        await setDoc(userDocRef, updatedData, { merge: true });
+        await runTransaction(db, async (transaction) => {
+          const userDocRef = doc(db, 'artifacts', 'default-app-id', 'users', user.uid, 'profile', 'data');
+          const userDoc = await transaction.get(userDocRef);
+          
+          if (!userDoc.exists) {
+            throw new Error("User profile not found.");
+          }
+          
+          let data = userDoc.data();
+          let updatedInventory = [...data.pokemon_inventory];
+          let updatedPokedex = [...data.pokedex];
+          
+          // Partner Evolution Check (just flag, don't auto-evolve)
+          let partnerIndex = updatedInventory.findIndex(p => p.isPartner);
+          if (partnerIndex !== -1) {
+            let partner = updatedInventory[partnerIndex];
+            const evoData = getPokemonDataByName(partner.currentName);
+            
+            if (evoData && evoData.evoExp !== -1 && partner.exp >= evoData.evoExp) {
+              // Partner is ready to evolve, set the flag
+              hasEvolved = true;
+            }
+          }
+          
+          // Catching Wild Pokémon
+          caughtMonNames.forEach(name => {
+            const wildMonData = getPokemonDataByName(name);
+            const isNew = !updatedPokedex.some(p => p.id === wildMonData.id);
+            if (isNew) {
+              updatedPokedex.push({ id: wildMonData.id, name: name });
+              hasNewPokemon = true;
+            }
+            
+            // Check if this pokemon already exists in inventory (duplicate)
+            const existingMonIndex = updatedInventory.findIndex(
+              p => p.pokedexId === wildMonData.id && !p.isPartner
+            );
+            
+            if (existingMonIndex !== -1) {
+              // Duplicate found - add 150 EXP to existing pokemon
+              updatedInventory[existingMonIndex].exp = (updatedInventory[existingMonIndex].exp || 0) + 150;
+            } else {
+              // New pokemon - add to inventory
+              updatedInventory.push({
+                id: crypto.randomUUID(),
+                pokedexId: wildMonData.id,
+                name: name,
+                type: wildMonData.type,
+                exp: Math.floor(expGain / 3), // Floor the EXP
+                stage: wildMonData.evoStage,
+                currentName: name,
+                isPartner: false,
+              });
+            }
+          });
+          
+          transaction.update(userDocRef, {
+            pokemon_inventory: updatedInventory,
+            pokedex: updatedPokedex,
+          });
+        });
       } catch (error) {
-        console.error("Error saving to Firestore:", error);
+        console.error("Error during catching transaction:", error);
+        return { hasNewPokemon: false, hasEvolved: false };
       }
-    }
+    } else {
+      // Fallback to local storage update
+      let updatedInventory = [...userData.pokemon_inventory];
+      let updatedPokedex = [...userData.pokedex];
 
-    // Also save to localStorage
-    saveUserData(updatedData);
-    setUserData(updatedData);
+      // Partner Evolution Check
+      let partnerIndex = updatedInventory.findIndex(p => p.isPartner);
+      if (partnerIndex !== -1) {
+        let partner = updatedInventory[partnerIndex];
+        const evoData = getPokemonDataByName(partner.currentName);
+        
+        if (evoData && evoData.evoExp !== -1 && partner.exp >= evoData.evoExp) {
+          hasEvolved = true;
+        }
+      }
+
+      // Catching Wild Pokémon
+      caughtMonNames.forEach(name => {
+        const wildMonData = getPokemonDataByName(name);
+        const isNew = !updatedPokedex.some(p => p.name === name);
+        if (isNew) {
+          updatedPokedex.push({ id: wildMonData.id, name: name });
+          hasNewPokemon = true;
+        }
+
+        // Check if this pokemon already exists in inventory (duplicate)
+        const existingMonIndex = updatedInventory.findIndex(
+          p => p.pokedexId === wildMonData.id && !p.isPartner
+        );
+        
+        if (existingMonIndex !== -1) {
+          // Duplicate found - add 150 EXP to existing pokemon
+          updatedInventory[existingMonIndex].exp = (updatedInventory[existingMonIndex].exp || 0) + 150;
+        } else {
+          // New pokemon - add to inventory
+          updatedInventory.push({
+            id: crypto.randomUUID(),
+            pokedexId: wildMonData.id,
+            name: name,
+            type: wildMonData.type,
+            exp: Math.floor(expGain / 3),
+            stage: wildMonData.evoStage,
+            currentName: name,
+            isPartner: false,
+          });
+        }
+      });
+
+      const updatedData = {
+        ...userData,
+        pokemon_inventory: updatedInventory,
+        pokedex: updatedPokedex,
+      };
+
+      saveUserData(updatedData);
+      setUserData(updatedData);
+    }
 
     return { hasNewPokemon, hasEvolved };
   }, [user, userData, db]);

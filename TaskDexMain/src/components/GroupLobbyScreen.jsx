@@ -6,12 +6,12 @@ const style = {
   secondaryButton: "bg-gray-600 text-white hover:bg-gray-700",
 };
 
-export default function AchievementsViewScreen({ setScreen, userData }) {
+export default function GroupLobbyScreen({ setScreen }) {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-[#f5f5dc] text-black">
       <div className={style.card + " max-w-4xl w-full text-center"}>
-        <h2 className="text-3xl font-bold mb-6 text-black">Achievements</h2>
-        <p className="text-gray-700 mb-6">Your achievements will appear here.</p>
+        <h2 className="text-3xl font-bold mb-6 text-black">Group Session Lobby</h2>
+        <p className="text-gray-700 mb-6">Group sessions feature coming soon!</p>
         <button
           className={style.button + " " + style.secondaryButton + " mt-8"}
           onClick={() => setScreen('MAIN_MENU')}
