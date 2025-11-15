@@ -49,12 +49,22 @@ export default function TopNavigationBar({ setScreen, userData, currentScreen })
       <nav className="nav-black-theme shadow-lg sticky top-0 z-40" role="navigation" aria-label="Main navigation">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            {/* Left side - Logo/Title */}
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center nav-font-jersey">
-                <span className="text-white font-bold text-xl">T</span>
-              </div>
-              <span className="text-xl font-bold text-white nav-font-jersey">TaskDex</span>
+            {/* Left side - refined logo pill */}
+            <div className="flex items-center">
+              <button
+                onClick={() => setScreen('MAIN_MENU')}
+                className="logo-pill flex items-center gap-3 px-3 py-1 rounded-full focus-ring"
+                aria-label="Open Main Menu"
+                title="TaskDex Home"
+              >
+                <div className="logo-mark rounded-full flex items-center justify-center">
+                  <span className="logo-letter">T</span>
+                </div>
+                <div className="logo-text leading-tight text-left">
+                  <div className="site-title text-white font-semibold">TaskDex</div>
+                  <div className="site-tagline text-gray-300 text-xs">Organize • Level Up</div>
+                </div>
+              </button>
             </div>
 
             {/* Center - Navigation Items */}
@@ -83,40 +93,10 @@ export default function TopNavigationBar({ setScreen, userData, currentScreen })
               ))}
             </div>
 
-            {/* Right side - Trainer and Partner Sprites */}
-            <div className="flex items-center space-x-2">
-              {/* Trainer Profile Icon */}
-              <button
-                onClick={handlePartnerClick}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    handlePartnerClick();
-                  }
-                }}
-                className={`relative p-1 bg-gray-900 rounded-full border-2 border-gray-700 hover:bg-gray-800 transition-all shadow-lg focus-ring ${
-                  clickedButton === 'trainer' ? 'pokeball-click' : ''
-                }`}
-                aria-label="Open partner selection screen"
-                title="View Partner Selection"
-              >
-                <img 
-                  src={getGifUrl(trainerSprite)} 
-                  alt="Trainer Profile"
-                  style={{ width: '40px', height: '40px', imageRendering: 'pixelated' }}
-                  onError={(e) => { e.target.onerror = null; e.target.src = getGifUrl("Placeholder"); }}
-                  className="rounded-full"
-                />
-                {/* Evolution notification */}
-                {isReadyToEvolve && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white font-bold text-xs animate-pulse border-2 border-white" aria-label="Partner ready to evolve">
-                    !
-                  </span>
-                )}
-              </button>
-              
-              {/* Partner Sprite with Aura Animation */}
-              {partner && (
+            {/* Right side - compact profile panel (trainer + partner) */}
+            <div className="flex items-center">
+              <div className="top-right-panel flex items-center space-x-3 px-2 py-1 rounded-full transition-all">
+                {/* Trainer Profile Compact Button */}
                 <button
                   onClick={handlePartnerClick}
                   onKeyDown={(e) => {
@@ -125,21 +105,65 @@ export default function TopNavigationBar({ setScreen, userData, currentScreen })
                       handlePartnerClick();
                     }
                   }}
-                  className={`partner-sprite-active rounded-full p-1 border-2 ${getTypeBorderColor(partner.type)} focus-ring transition-transform hover-lift ${
-                    clickedButton === 'partner' ? 'pokeball-click' : ''
+                  className={`profile-button flex items-center gap-3 pl-2 pr-3 py-1 rounded-full bg-transparent focus-ring ${
+                    clickedButton === 'trainer' ? 'pokeball-click' : ''
                   }`}
-                  aria-label={`Active partner: ${partner.currentName}. Click to change partner.`}
-                  title={`Partner: ${partner.currentName}`}
+                  aria-label="Open partner selection screen"
+                  title="View Partner Selection"
                 >
-                  <img 
-                    src={getGifUrl(partner.currentName)} 
-                    alt={`Partner ${partner.currentName}`}
-                    style={{ width: '40px', height: '40px', imageRendering: 'pixelated' }}
-                    onError={(e) => { e.target.onerror = null; e.target.src = getGifUrl("Placeholder"); }}
-                    className="rounded-full"
-                  />
+                  <div className="sprite-ring rounded-full p-0.5 flex items-center justify-center">
+                    <img
+                      src={getGifUrl(trainerSprite)}
+                      alt="Trainer Profile"
+                      style={{ width: '40px', height: '40px', imageRendering: 'pixelated' }}
+                      onError={(e) => { e.target.onerror = null; e.target.src = getGifUrl('Placeholder'); }}
+                      className="rounded-full"
+                    />
+                  </div>
+
+                  <div className="profile-info text-left">
+                    <div className="profile-name text-white font-semibold text-sm">{userData?.trainerName || 'Trainer'}</div>
+                    <div className="profile-sub text-gray-300 text-xs">{partner ? partner.currentName : 'No Partner'}</div>
+                  </div>
+
+                  <div className="chev text-white opacity-80">›</div>
+
+                  {/* Evolution notification tucked into the profile */}
+                  {isReadyToEvolve && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white font-bold text-xs animate-pulse border-2 border-white" aria-label="Partner ready to evolve">
+                      !
+                    </span>
+                  )}
                 </button>
-              )}
+
+                {/* Partner Sprite Accent */}
+                {partner && (
+                  <button
+                    onClick={handlePartnerClick}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handlePartnerClick();
+                      }
+                    }}
+                    className={`partner-sprite-active rounded-full p-1 ${getTypeBorderColor(partner.type)} focus-ring transition-transform hover-lift ${
+                      clickedButton === 'partner' ? 'pokeball-click' : ''
+                    }`}
+                    aria-label={`Active partner: ${partner.currentName}. Click to change partner.`}
+                    title={`Partner: ${partner.currentName}`}
+                  >
+                    <div className="partner-ring rounded-full p-0.5">
+                      <img
+                        src={getGifUrl(partner.currentName)}
+                        alt={`Partner ${partner.currentName}`}
+                        style={{ width: '44px', height: '44px', imageRendering: 'pixelated' }}
+                        onError={(e) => { e.target.onerror = null; e.target.src = getGifUrl('Placeholder'); }}
+                        className="rounded-full"
+                      />
+                    </div>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

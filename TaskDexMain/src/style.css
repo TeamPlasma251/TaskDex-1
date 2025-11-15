@@ -397,6 +397,69 @@ html {
   outline-offset: 2px;
 }
 
+/* Top-right profile panel styles - elegant, subtle glass */
+.top-right-panel {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255,255,255,0.04);
+  backdrop-filter: blur(6px) saturate(110%);
+  -webkit-backdrop-filter: blur(6px) saturate(110%);
+}
+
+.profile-button {
+  cursor: pointer;
+  align-items: center;
+  gap: 8px;
+  transition: transform 180ms var(--pokemon-animation-ease), box-shadow 180ms var(--pokemon-animation-ease), background 180ms var(--pokemon-animation-ease);
+}
+.profile-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+}
+
+.sprite-ring {
+  background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+  border-radius: 9999px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.45) inset;
+}
+
+.partner-ring {
+  background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+  border-radius: 9999px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.45);
+}
+
+.profile-info .profile-name { line-height: 1; }
+.profile-info .profile-sub { line-height: 1; }
+
+.chev { font-size: 18px; transform: translateY(-1px); }
+
+/* Make partner sprite ring color subtle when a type border color is applied */
+.partner-sprite-active { padding: 2px; }
+
+/* Logo pill (top-left) */
+.logo-pill {
+  background: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.012));
+  border: 1px solid rgba(255,255,255,0.04);
+  padding-left: 10px;
+  padding-right: 10px;
+}
+.logo-pill:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.45); }
+.logo-mark {
+  width: 42px;
+  height: 42px;
+  background: radial-gradient(circle at 30% 20%, #ff7a7a 0%, #dc2626 60%);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  display:flex; align-items:center; justify-content:center;
+}
+.logo-letter {
+  font-family: 'Press Start 2P', monospace;
+  color: white; font-weight:700; font-size:18px; line-height:1;
+  -webkit-font-smoothing: none;
+}
+.logo-text .site-title { font-size: 16px; }
+.logo-text .site-tagline { font-size: 11px; opacity: 0.95; }
+
+
 /* ARIA Live Region Styling */
 .aria-live-region {
   position: absolute;
