@@ -51,3 +51,22 @@ h1, h2, h3, h4, h5, h6 {
   -webkit-font-smoothing: none;
   -moz-osx-font-smoothing: auto;
 }
+.click-particle {
+  position: fixed;
+  width: 8px;
+  height: 8px;
+  background: radial-gradient(circle, #ffef99, #ffb300);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+}
+.click-particle {
+  position: fixed;
+  width: 8px;
+  height: 8px;
+  background: radial-gradient(circle, #ff4d4d, #ff0000); /* red gradient */
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+}
+
