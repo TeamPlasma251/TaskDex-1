@@ -3,6 +3,7 @@ import { formatTime } from '../utils/formatTime.js';
 import { getRandomWildPokemon } from '../data/pokemonData.js';
 import { getGifUrl } from '../utils/sprites.js';
 import { getTypeHoverColor, getTypeBorderColor, getTypeBgColor, getTypeRingColor } from '../utils/typeColors.js';
+import { getThemeByType } from '../config/pomodoroThemes.js';
 
 const style = {
   card: "bg-white p-6 rounded-xl shadow-lg border-2 border-gray-300",
@@ -223,15 +224,41 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
     : `Break Time ${currentSession}/${numSessions}`;
   
   const isBreak = !isWorkPhase;
-  const headerColor = isBreak ? 'text-green-600' : 'text-red-600';
+  const theme = getThemeByType(sessionType);
+  const headerColor = isBreak ? 'text-green-600' : theme.accentColor ? `text-[${theme.accentColor}]` : 'text-red-600';
   const totalTime = isBreak ? breakDuration * 60 : workDuration * 60;
   const progress = totalTime > 0 ? (1 - (timeLeft / totalTime)) * 100 : 0;
   
+  // Theme background style
+  const themeBackgroundStyle = {
+    backgroundImage: theme.backgroundImage ? `url(${theme.backgroundImage})` : 'none',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+    backgroundAttachment: 'fixed',
+    position: 'relative',
+    minHeight: '100vh',
+  };
+  
   return (
-    <div className="flex flex-col items-center min-h-screen p-4 bg-[#f5f5dc] text-black">
-      <div className={style.card + " max-w-2xl w-full mt-12"}>
+    <div 
+      className="flex flex-col items-center min-h-screen p-4 text-white relative"
+      style={themeBackgroundStyle}
+    >
+      {/* Overlay for better text readability */}
+      {theme.backgroundImage && (
+        <div 
+          className="absolute inset-0 z-0"
+          style={{ backgroundColor: theme.overlay }}
+        ></div>
+      )}
+      
+      <div className={style.card + " max-w-2xl w-full mt-12 relative z-10 bg-white/95 backdrop-blur-sm"}>
         {/* Task Name */}
-        <h2 className={`text-4xl font-bold mb-6 text-center ${headerColor}`}>
+        <h2 
+          className="text-4xl font-bold mb-6 text-center"
+          style={{ color: theme.accentColor }}
+        >
           {taskName}
         </h2>
         
@@ -266,8 +293,11 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
         {/* Progress Bar */}
         <div className="w-full bg-gray-300 rounded-full h-3 mb-8">
           <div 
-            className={`h-3 rounded-full transition-all duration-300 ${isBreak ? 'bg-green-500' : 'bg-red-500'}`} 
-            style={{ width: `${progress}%` }}
+            className="h-3 rounded-full transition-all duration-300" 
+            style={{ 
+              width: `${progress}%`,
+              backgroundColor: isBreak ? '#16a34a' : theme.accentColor
+            }}
           ></div>
         </div>
         

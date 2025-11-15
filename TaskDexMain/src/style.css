@@ -1,5 +1,6 @@
 /* Base styles - Tailwind CSS handles most styling */
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
 
 :root {
   font-family: 'Times New Roman', serif;
@@ -50,4 +51,354 @@ h1, h2, h3, h4, h5, h6 {
   font-family: 'Press Start 2P', monospace;
   -webkit-font-smoothing: none;
   -moz-osx-font-smoothing: auto;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Welcome page animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.welcome-fade-in {
+  animation: fadeIn 0.8s ease-out;
+}
+
+.welcome-fade-in-up {
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.welcome-text-smooth {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.welcome-body-text {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+}
+
+/* Smooth text reveal animation */
+@keyframes textReveal {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.text-reveal {
+  animation: textReveal 1s ease-out forwards;
+}
+
+.text-reveal-delay-1 {
+  animation: textReveal 1s ease-out 0.2s forwards;
+  opacity: 0;
+}
+
+.text-reveal-delay-2 {
+  animation: textReveal 1s ease-out 0.4s forwards;
+  opacity: 0;
+}
+
+.text-reveal-delay-3 {
+  animation: textReveal 1s ease-out 0.6s forwards;
+  opacity: 0;
+}
+
+/* CSS Variables for Pokémon Theme */
+:root {
+  --pokemon-animation-duration: 200ms;
+  --pokemon-animation-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --pokemon-hover-lift: 6px;
+  --pokemon-focus-ring: 3px;
+  --pokemon-sprite-size: 52px;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Breathing Aura Animation for Sprite */
+@keyframes spriteBreathing {
+  0%, 100% {
+    transform: scale(1);
+    filter: blur(0px);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.08);
+    filter: blur(2px);
+    opacity: 0.9;
+  }
+}
+
+/* Particle Burst Animation */
+@keyframes particleBurst {
+  0% {
+    opacity: 0;
+    transform: scale(0) translate(0, 0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2) translate(var(--particle-x, 0), var(--particle-y, 0));
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.8) translate(var(--particle-x, 0), var(--particle-y, 0));
+  }
+}
+
+/* Pokémon-style Card with Pixel Sprite */
+.pokemon-card {
+  position: relative;
+  transition: transform var(--pokemon-animation-duration) var(--pokemon-animation-ease),
+              box-shadow var(--pokemon-animation-duration) var(--pokemon-animation-ease);
+  overflow: visible;
+}
+
+.pokemon-card::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: var(--pokemon-sprite-size);
+  height: var(--pokemon-sprite-size);
+  background-image: var(--pokemon-sprite-url);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  opacity: 0.7;
+  z-index: 1;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+.pokemon-card:hover::before {
+  animation: spriteBreathing 2s ease-in-out infinite;
+  opacity: 0.9;
+}
+
+.pokemon-card:hover {
+  transform: translateY(calc(-1 * var(--pokemon-hover-lift)));
+}
+
+/* Particle burst container - creates multiple particles */
+.pokemon-card::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(220, 38, 38, 1) 0%, rgba(220, 38, 38, 0) 70%);
+  pointer-events: none;
+  z-index: 10;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  box-shadow: 
+    /* Create multiple particles using box-shadow */
+    0 0 0 0 rgba(220, 38, 38, 0.8),
+    20px -15px 0 -2px rgba(220, 38, 38, 0.6),
+    -20px -15px 0 -2px rgba(220, 38, 38, 0.6),
+    15px 20px 0 -2px rgba(220, 38, 38, 0.6),
+    -15px 20px 0 -2px rgba(220, 38, 38, 0.6),
+    25px 5px 0 -2px rgba(220, 38, 38, 0.5),
+    -25px 5px 0 -2px rgba(220, 38, 38, 0.5),
+    5px 25px 0 -2px rgba(220, 38, 38, 0.5),
+    -5px 25px 0 -2px rgba(220, 38, 38, 0.5);
+}
+
+@keyframes particleBurstMulti {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.5);
+  }
+}
+
+.pokemon-card.particle-burst::after {
+  animation: particleBurstMulti 400ms var(--pokemon-animation-ease);
+}
+
+.pokemon-card:focus-visible {
+  outline: var(--pokemon-focus-ring) solid #dc2626;
+  outline-offset: 2px;
+}
+
+/* Pokéball Shake Animation on Click */
+@keyframes pokeballShake {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  10% { transform: translateX(-4px) rotate(-5deg); }
+  20% { transform: translateX(4px) rotate(5deg); }
+  30% { transform: translateX(-3px) rotate(-3deg); }
+  40% { transform: translateX(3px) rotate(3deg); }
+  50% { transform: translateX(-2px) rotate(-2deg); }
+  60% { transform: translateX(2px) rotate(2deg); }
+  70% { transform: translateX(-1px) rotate(-1deg); }
+  80% { transform: translateX(1px) rotate(1deg); }
+  90% { transform: translateX(0) rotate(0deg); }
+}
+
+@keyframes pokeballPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.pokeball-click {
+  animation: pokeballShake 300ms var(--pokemon-animation-ease),
+             pokeballPop 200ms var(--pokemon-animation-ease);
+}
+
+/* Partner Sprite Aura/Particle Burst on Hover */
+@keyframes auraBurst {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+    box-shadow: 0 0 0 8px rgba(220, 38, 38, 0.2),
+               0 0 0 16px rgba(220, 38, 38, 0.1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+  }
+}
+
+.partner-sprite-active {
+  position: relative;
+}
+
+.partner-sprite-active::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.partner-sprite-active:hover::after {
+  animation: auraBurst 400ms var(--pokemon-animation-ease);
+}
+
+/* Smooth Hover Lift Animation */
+.hover-lift {
+  transition: transform var(--pokemon-animation-duration) var(--pokemon-animation-ease);
+}
+
+.hover-lift:hover {
+  transform: translateY(calc(-1 * var(--pokemon-hover-lift)));
+}
+
+/* Focus Ring for Accessibility */
+.focus-ring:focus-visible {
+  outline: var(--pokemon-focus-ring) solid #dc2626;
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* Navigation Bar Black Theme */
+.nav-black-theme {
+  background-color: #000000;
+  border-bottom: 2px solid #1f1f1f;
+}
+
+.nav-black-theme .nav-button {
+  color: #ffffff;
+  background-color: #1a1a1a;
+  border: 1px solid #333333;
+  transition: all var(--pokemon-animation-duration) var(--pokemon-animation-ease);
+}
+
+.nav-black-theme .nav-button:hover {
+  background-color: #2a2a2a;
+  transform: translateY(-2px);
+}
+
+.nav-black-theme .nav-button.active {
+  background-color: #dc2626;
+  color: #ffffff;
+}
+
+.nav-black-theme .nav-button:focus-visible {
+  outline: var(--pokemon-focus-ring) solid #dc2626;
+  outline-offset: 2px;
+}
+
+/* ARIA Live Region Styling */
+.aria-live-region {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* Animation for new task addition */
+@keyframes taskAdd {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.task-add-animation {
+  animation: taskAdd 300ms var(--pokemon-animation-ease);
 }

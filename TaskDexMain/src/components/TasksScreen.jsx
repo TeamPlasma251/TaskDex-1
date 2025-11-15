@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { POKEMON_DATA } from '../data/pokemonData.js';
 import { getTypeHoverColor, getTypeBorderColor, getTypeBgColor, getTypeRingColor } from '../utils/typeColors.js';
+import { getGifUrl } from '../utils/sprites.js';
 
 const style = {
   card: "bg-white p-6 rounded-xl shadow-lg border-2 border-gray-300",
@@ -97,14 +98,17 @@ function TaskStartModal({ task, onStart, onCancel, getTypeButtonColor }) {
 }
 
 export default function TasksScreen({ setScreen, userData, tasks, setTasks, setSessionConfig }) {
-  const [showAddTask, setShowAddTask] = React.useState(false);
-  const [selectedTask, setSelectedTask] = React.useState(null);
-  const [taskName, setTaskName] = React.useState('');
-  const [taskType, setTaskType] = React.useState('Psychic');
-  const [taskDescription, setTaskDescription] = React.useState('');
+  const [showAddTask, setShowAddTask] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [taskName, setTaskName] = useState('');
+  const [taskType, setTaskType] = useState('Psychic');
+  const [taskDescription, setTaskDescription] = useState('');
+  const [clickedTaskId, setClickedTaskId] = useState(null);
+  const [newTaskId, setNewTaskId] = useState(null);
+  const ariaLiveRef = useRef(null);
   
   // Show welcome message only once per session (after login)
-  const [showWelcome, setShowWelcome] = React.useState(() => {
+  const [showWelcome, setShowWelcome] = useState(() => {
     const hasSeenWelcome = sessionStorage.getItem('hasSeenWelcome');
     return !hasSeenWelcome;
   });
@@ -113,6 +117,17 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
   const handleDismissWelcome = () => {
     setShowWelcome(false);
     sessionStorage.setItem('hasSeenWelcome', 'true');
+  };
+
+  const announceToScreenReader = (message) => {
+    if (ariaLiveRef.current) {
+      ariaLiveRef.current.textContent = message;
+      setTimeout(() => {
+        if (ariaLiveRef.current) {
+          ariaLiveRef.current.textContent = '';
+        }
+      }, 1000);
+    }
   };
 
   const handleSaveTask = () => {
@@ -127,14 +142,21 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
       completed: false,
     };
     
+    setNewTaskId(newTask.id);
     const updatedTasks = [...(tasks || []), newTask];
     setTasks(updatedTasks);
+    
+    // Announce to screen readers
+    announceToScreenReader(`Task "${taskName}" added successfully`);
     
     // Reset form
     setTaskName('');
     setTaskType('Psychic');
     setTaskDescription('');
     setShowAddTask(false);
+    
+    // Clear animation class after animation completes
+    setTimeout(() => setNewTaskId(null), 300);
   };
 
   const handleStartTask = (task, workDuration, breakDuration, numSessions) => {
@@ -147,7 +169,46 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
       numSessions: numSessions
     });
     setSelectedTask(null);
+    announceToScreenReader(`Starting task: ${task.name}`);
     setScreen('POMODORO_RUNNING');
+  };
+
+  const handleTaskClick = (task, event) => {
+    setClickedTaskId(task.id);
+    
+    // Add particle burst effect
+    const card = event.currentTarget;
+    card.classList.add('particle-burst');
+    setTimeout(() => {
+      card.classList.remove('particle-burst');
+    }, 400);
+    
+    setTimeout(() => {
+      setClickedTaskId(null);
+      setSelectedTask(task);
+    }, 300);
+  };
+
+  const handleTaskKeyDown = (e, task) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleTaskClick(task, e);
+    }
+  };
+
+  // Get a Pokémon sprite for decoration based on task type
+  const getTaskSpriteUrl = (type) => {
+    // Map types to example Pokémon names
+    const typeMap = {
+      'Grass': 'Bulbasaur',
+      'Fire': 'Charmander',
+      'Water': 'Squirtle',
+      'Psychic': 'Mewtwo',
+      'Ghost': 'Gastly',
+      'Electric': 'Pikachu',
+    };
+    const pokemonName = typeMap[type] || 'Pikachu';
+    return getGifUrl(pokemonName);
   };
 
   const getTypeButtonColor = (type) => {
@@ -167,6 +228,14 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
 
   return (
     <div className="flex flex-col items-center min-h-screen p-4 bg-[#f5f5dc] text-black">
+      {/* ARIA Live Region for Screen Reader Announcements */}
+      <div 
+        ref={ariaLiveRef}
+        className="aria-live-region" 
+        aria-live="polite" 
+        aria-atomic="true"
+      ></div>
+      
       <div className={style.card + " max-w-4xl w-full mt-8"}>
         {/* Welcome Message - Shows once after login */}
         {showWelcome && (
@@ -191,17 +260,18 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-4xl font-bold text-black">My Tasks</h2>
           <button
-            className={style.button + " " + style.primaryButton + " text-lg px-8 py-4"}
+            className={`${style.button} ${style.primaryButton} text-lg px-8 py-4 focus-ring hover-lift`}
             onClick={() => setShowAddTask(true)}
+            aria-label="Add new task"
           >
             + Add Task
           </button>
         </div>
 
         {/* Tasks List */}
-        <div className="space-y-4">
+        <div className="space-y-4" role="list" aria-label="Task list">
           {(!tasks || tasks.length === 0) ? (
-            <div className="text-center py-12 bg-gray-100 rounded-lg border-2 border-gray-300">
+            <div className="text-center py-12 bg-gray-100 rounded-lg border-2 border-gray-300" role="status">
               <p className="text-gray-600 text-lg">No tasks yet. Click "Add Task" to create your first task!</p>
             </div>
           ) : (
@@ -210,12 +280,22 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
               const typeBorderClass = getTypeBorderColor(task.type);
               const typeBgClass = getTypeBgColor(task.type);
               const typeRingClass = getTypeRingColor(task.type);
+              const spriteUrl = getTaskSpriteUrl(task.type);
               
               return (
                 <div
                   key={task.id}
-                  className={`p-6 rounded-xl border-2 cursor-pointer transition-all duration-200 ${typeBorderClass} bg-white ${typeHoverClass} hover:ring-4 ${typeRingClass} hover:shadow-xl`}
-                  onClick={() => setSelectedTask(task)}
+                  role="listitem"
+                  tabIndex={0}
+                  className={`pokemon-card p-6 rounded-xl border-2 cursor-pointer focus-ring hover-lift ${typeBorderClass} bg-white ${typeHoverClass} hover:ring-4 ${typeRingClass} hover:shadow-xl ${
+                    clickedTaskId === task.id ? 'pokeball-click' : ''
+                  } ${newTaskId === task.id ? 'task-add-animation' : ''}`}
+                  onClick={(e) => handleTaskClick(task, e)}
+                  onKeyDown={(e) => handleTaskKeyDown(e, task)}
+                  aria-label={`Task: ${task.name}, Type: ${task.type}. ${task.description ? `Description: ${task.description}` : ''} Click to start task.`}
+                  style={{
+                    '--pokemon-sprite-url': `url(${spriteUrl})`
+                  }}
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">

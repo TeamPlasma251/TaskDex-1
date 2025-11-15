@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { getGifUrl } from '../utils/sprites.js';
 import { getTypeBorderColor } from '../utils/typeColors.js';
 import { getPokemonDataByName } from '../data/pokemonData.js';
@@ -6,16 +6,17 @@ import { getPokemonDataByName } from '../data/pokemonData.js';
 export default function TopNavigationBar({ setScreen, userData, currentScreen }) {
   const trainerSprite = userData?.trainerGender === 'male' ? 'TrainerMale' : 'TrainerFemale';
   const partner = userData?.pokemon_inventory.find(p => p.isPartner);
+  const [clickedButton, setClickedButton] = useState(null);
   
   // Check if partner is ready to evolve
   const partnerData = partner ? getPokemonDataByName(partner.currentName) : null;
   const isReadyToEvolve = partner && partnerData && partnerData.evoExp !== -1 && partner.exp >= partnerData.evoExp;
   
   const navItems = [
-    { name: "My Tasks", screen: 'TASKS_SCREEN', icon: '📝' },
-    { name: "Pokédex", screen: 'POKEDEX_VIEW', icon: '📖' },
-    { name: "Friends", screen: 'FRIENDS_LIST', icon: '🫂' },
-    { name: "Achievements", screen: 'ACHIEVEMENTS_VIEW', icon: '🏆' },
+    { name: "My Tasks", screen: 'TASKS_SCREEN', ariaLabel: 'Navigate to My Tasks screen' },
+    { name: "Pokédex", screen: 'POKEDEX_VIEW', ariaLabel: 'Navigate to Pokédex screen' },
+    { name: "Friends", screen: 'FRIENDS_LIST', ariaLabel: 'Navigate to Friends screen' },
+    { name: "Achievements", screen: 'ACHIEVEMENTS_VIEW', ariaLabel: 'Navigate to Achievements screen' },
   ];
 
   // Don't show navigation on these screens
@@ -24,77 +25,126 @@ export default function TopNavigationBar({ setScreen, userData, currentScreen })
     return null;
   }
 
+  const handleNavClick = (screen, itemName) => {
+    setClickedButton(screen);
+    setTimeout(() => {
+      setClickedButton(null);
+      setScreen(screen);
+    }, 300);
+  };
+
+  const handlePartnerClick = () => {
+    setClickedButton('partner');
+    setTimeout(() => {
+      setClickedButton(null);
+      setScreen('PARTNER_SELECT_SCREEN');
+    }, 300);
+  };
+
   return (
-    <nav className="bg-white border-b-2 border-gray-300 shadow-md sticky top-0 z-40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Left side - Logo/Title */}
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-xl">T</span>
+    <>
+      {/* ARIA Live Region for Screen Reader Announcements */}
+      <div className="aria-live-region" aria-live="polite" aria-atomic="true" id="nav-announcements"></div>
+      
+      <nav className="nav-black-theme shadow-lg sticky top-0 z-40" role="navigation" aria-label="Main navigation">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            {/* Left side - Logo/Title */}
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center nav-font-jersey">
+                <span className="text-white font-bold text-xl">T</span>
+              </div>
+              <span className="text-xl font-bold text-white nav-font-jersey">TaskDex</span>
             </div>
-            <span className="text-xl font-bold text-black">TaskMon</span>
-          </div>
 
-          {/* Center - Navigation Items */}
-          <div className="flex items-center space-x-2">
-            {navItems.map((item) => (
+            {/* Center - Navigation Items */}
+            <div className="flex items-center space-x-2" role="menubar">
+              {navItems.map((item) => (
+                <button
+                  key={item.screen}
+                  onClick={() => handleNavClick(item.screen, item.name)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleNavClick(item.screen, item.name);
+                    }
+                  }}
+                  className={`nav-button px-4 py-2 rounded-lg font-semibold nav-font-times focus-ring ${
+                    currentScreen === item.screen
+                      ? 'active'
+                      : ''
+                  } ${clickedButton === item.screen ? 'pokeball-click' : ''}`}
+                  aria-label={item.ariaLabel}
+                  aria-current={currentScreen === item.screen ? 'page' : undefined}
+                  role="menuitem"
+                >
+                  <span className="text-sm">{item.name}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Right side - Trainer and Partner Sprites */}
+            <div className="flex items-center space-x-2">
+              {/* Trainer Profile Icon */}
               <button
-                key={item.screen}
-                onClick={() => setScreen(item.screen)}
-                className={`px-4 py-2 rounded-lg font-semibold transition-colors duration-200 flex items-center space-x-2 ${
-                  currentScreen === item.screen
-                    ? 'bg-red-600 text-white'
-                    : 'bg-gray-100 text-black hover:bg-gray-200'
+                onClick={handlePartnerClick}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handlePartnerClick();
+                  }
+                }}
+                className={`relative p-1 bg-gray-900 rounded-full border-2 border-gray-700 hover:bg-gray-800 transition-all shadow-lg focus-ring ${
+                  clickedButton === 'trainer' ? 'pokeball-click' : ''
                 }`}
-              >
-                <span className="text-lg">{item.icon}</span>
-                <span className="text-sm">{item.name}</span>
-              </button>
-            ))}
-          </div>
-
-          {/* Right side - Trainer and Partner Sprites */}
-          <div className="flex items-center space-x-2">
-            {/* Trainer Profile Icon */}
-            <div 
-              className="relative cursor-pointer p-1 bg-white rounded-full border-2 border-red-600 hover:bg-red-100 transition-all shadow-lg"
-              onClick={() => setScreen('PARTNER_SELECT_SCREEN')}
-            >
-              <img 
-                src={getGifUrl(trainerSprite)} 
-                alt="Profile"
-                style={{ width: '40px', height: '40px', imageRendering: 'pixelated' }}
-                onError={(e) => { e.target.onerror = null; e.target.src = getGifUrl("Placeholder"); }}
-                className="rounded-full"
-              />
-              {/* Evolution notification */}
-              {isReadyToEvolve && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white font-bold text-xs animate-pulse border-2 border-white">
-                  !
-                </span>
-              )}
-            </div>
-            
-            {/* Partner Sprite with Type-Colored Circle */}
-            {partner && (
-              <div 
-                className={`rounded-full p-1 border-2 ${getTypeBorderColor(partner.type)} cursor-pointer hover:scale-110 transition-transform`}
-                onClick={() => setScreen('PARTNER_SELECT_SCREEN')}
+                aria-label="Open partner selection screen"
+                title="View Partner Selection"
               >
                 <img 
-                  src={getGifUrl(partner.currentName)} 
-                  alt="Partner" 
+                  src={getGifUrl(trainerSprite)} 
+                  alt="Trainer Profile"
                   style={{ width: '40px', height: '40px', imageRendering: 'pixelated' }}
                   onError={(e) => { e.target.onerror = null; e.target.src = getGifUrl("Placeholder"); }}
                   className="rounded-full"
                 />
-              </div>
-            )}
+                {/* Evolution notification */}
+                {isReadyToEvolve && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white font-bold text-xs animate-pulse border-2 border-white" aria-label="Partner ready to evolve">
+                    !
+                  </span>
+                )}
+              </button>
+              
+              {/* Partner Sprite with Aura Animation */}
+              {partner && (
+                <button
+                  onClick={handlePartnerClick}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handlePartnerClick();
+                    }
+                  }}
+                  className={`partner-sprite-active rounded-full p-1 border-2 ${getTypeBorderColor(partner.type)} focus-ring transition-transform hover-lift ${
+                    clickedButton === 'partner' ? 'pokeball-click' : ''
+                  }`}
+                  aria-label={`Active partner: ${partner.currentName}. Click to change partner.`}
+                  title={`Partner: ${partner.currentName}`}
+                >
+                  <img 
+                    src={getGifUrl(partner.currentName)} 
+                    alt={`Partner ${partner.currentName}`}
+                    style={{ width: '40px', height: '40px', imageRendering: 'pixelated' }}
+                    onError={(e) => { e.target.onerror = null; e.target.src = getGifUrl("Placeholder"); }}
+                    className="rounded-full"
+                  />
+                </button>
+              )}
+            </div>
           </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+    </>
   );
 }
 
