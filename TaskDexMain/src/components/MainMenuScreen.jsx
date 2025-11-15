@@ -2,7 +2,7 @@ import React from 'react';
 import { getGifUrl } from '../utils/sprites.js';
 
 const style = {
-  card: "bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700",
+  card: "bg-white p-6 rounded-xl shadow-lg border-2 border-gray-300",
   button: "px-6 py-3 rounded-xl font-bold transition-colors duration-300 shadow-md",
   secondaryButton: "bg-gray-600 text-white hover:bg-gray-700",
 };
@@ -24,17 +24,17 @@ export default function MainMenuScreen({ setScreen, userData, handleLogout, hand
   };
   
   return (
-    <div className="flex flex-col items-center min-h-screen p-4 bg-gray-900 text-white">
+    <div className="flex flex-col items-center min-h-screen p-4 bg-[#f5f5dc] text-black">
       <div className={style.card + " max-w-4xl w-full mt-12"}>
         {/* Personalized Welcome & Sprite Display */}
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 className="text-4xl font-bold text-blue-400">Welcome Back, {trainerName}!</h2>
-            <p className="text-gray-400 mt-2">
-              Your partner, <span className="font-semibold text-green-400">{firstPokemon}</span>, is ready.
+            <h2 className="text-4xl font-bold text-black">Welcome Back, {trainerName}!</h2>
+            <p className="text-gray-700 mt-2">
+              Your partner, <span className="font-semibold text-green-600">{firstPokemon}</span>, is ready.
             </p>
           </div>
-          <div className="flex space-x-2 bg-gray-700/50 p-3 rounded-xl border border-gray-600">
+          <div className="flex space-x-2 bg-gray-100 p-3 rounded-xl border-2 border-gray-300">
             <img 
               src={getGifUrl(trainerSprite)} 
               alt="Trainer" 
@@ -54,7 +54,7 @@ export default function MainMenuScreen({ setScreen, userData, handleLogout, hand
           {menuItems.map((item) => (
             <button
               key={item.name}
-              className={`${style.button} bg-gray-700 hover:bg-gray-600 flex flex-col items-center space-y-2 py-8`}
+              className={`${style.button} bg-red-600 hover:bg-red-700 text-white flex flex-col items-center space-y-2 py-8`}
               onClick={() => handleMenuClick(item.screen)}
             >
               <span className="text-3xl">{item.icon}</span>

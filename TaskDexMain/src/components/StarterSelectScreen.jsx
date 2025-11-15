@@ -3,9 +3,9 @@ import { getGifUrl } from '../utils/sprites.js';
 import { getPokemonDataByName } from '../data/pokemonData.js';
 
 const style = {
-  card: "bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700",
+  card: "bg-white p-6 rounded-xl shadow-lg border-2 border-gray-300",
   button: "px-6 py-3 rounded-xl font-bold transition-colors duration-300 shadow-md",
-  primaryButton: "bg-blue-600 text-white hover:bg-blue-700",
+  primaryButton: "bg-red-600 text-white hover:bg-red-700",
 };
 
 export default function StarterSelectScreen({ saveNewUser, setScreen, userData }) {
@@ -26,13 +26,13 @@ export default function StarterSelectScreen({ saveNewUser, setScreen, userData }
   }
   
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-900 text-white">
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-[#f5f5dc] text-black">
       <div className={style.card + " max-w-4xl w-full text-center"}>
-        <h2 className="text-3xl font-bold mb-4 text-blue-400">Choose Your Partner</h2>
-        <p className="text-gray-400 mb-8">Select your starter Pokémon and trainer avatar to begin your journey.</p>
+        <h2 className="text-3xl font-bold mb-4 text-black">Choose Your Partner</h2>
+        <p className="text-gray-700 mb-8">Select your starter Pokémon and trainer avatar to begin your journey.</p>
         
         {/* Gender Sprite Selection */}
-        <div className="mb-8 p-4 bg-gray-700/50 rounded-lg">
+        <div className="mb-8 p-4 bg-gray-100 rounded-lg border-2 border-gray-300">
           <h3 className="text-xl font-semibold mb-3">Trainer Avatar</h3>
           <div className="flex justify-center space-x-8">
             <div
@@ -57,7 +57,7 @@ export default function StarterSelectScreen({ saveNewUser, setScreen, userData }
           {starters.map(name => (
             <div
               key={name}
-              className={`p-4 rounded-xl cursor-pointer transition-all duration-200 border-2 ${selectedStarter === name ? 'border-blue-500 bg-gray-700' : 'border-gray-700 hover:border-gray-500'}`}
+              className={`p-4 rounded-xl cursor-pointer transition-all duration-200 border-2 ${selectedStarter === name ? 'border-red-600 bg-red-100' : 'border-gray-300 bg-white hover:border-gray-500'}`}
               onClick={() => setSelectedStarter(name)}
             >
               <img
@@ -68,7 +68,7 @@ export default function StarterSelectScreen({ saveNewUser, setScreen, userData }
                 onError={(e) => { e.target.onerror = null; e.target.src = getGifUrl("Placeholder"); }} 
               />
               <p className="text-lg font-semibold text-center">{name}</p>
-              <p className="text-xs text-gray-500">{getPokemonDataByName(name)?.type} Type</p>
+              <p className="text-xs text-gray-600">{getPokemonDataByName(name)?.type} Type</p>
             </div>
           ))}
         </div>

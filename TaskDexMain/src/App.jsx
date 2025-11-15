@@ -12,6 +12,7 @@ import FriendsListScreen from './components/FriendsListScreen.jsx';
 import AchievementsViewScreen from './components/AchievementsViewScreen.jsx';
 import GlobalProfileIcon from './components/GlobalProfileIcon.jsx';
 import PartnerSelectScreen from './components/PartnerSelectScreen.jsx';
+import GroupLobbyScreen from './components/GroupLobbyScreen.jsx';
 
 function App() {
   const {
@@ -114,13 +115,16 @@ function App() {
       case 'ACHIEVEMENTS_VIEW':
         return <AchievementsViewScreen setScreen={setScreen} userData={userData} />;
       
+      case 'GROUP_LOBBY':
+        return <GroupLobbyScreen setScreen={setScreen} />;
+      
       default:
         return <MainMenuScreen setScreen={setScreen} userData={userData} handleUnlockPokedex={handleUnlockPokedex} handleRevertPokedex={handleRevertPokedex} />;
     }
   };
 
   return (
-    <div className="bg-[#f5f5dc] min-h-screen font-pixel">
+    <div className="bg-[#f5f5dc] min-h-screen">
       {/* Render the global icon *unless* on a setup/login screen */}
       {userData && screen !== 'WELCOME' && screen !== 'LOGIN_SIGNUP' && screen !== 'STARTER_SELECT' && (
         <GlobalProfileIcon setScreen={setScreen} userData={userData} />

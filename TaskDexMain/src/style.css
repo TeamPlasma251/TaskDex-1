@@ -2,7 +2,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
 :root {
-  font-family: 'Press Start 2P', monospace;
+  font-family: 'Times New Roman', serif;
   line-height: 1.6;
   font-weight: 400;
   color-scheme: light;
@@ -10,8 +10,6 @@
   background-color: #f5f5dc; /* beige */
   font-synthesis: none;
   text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: none;
-  -moz-osx-font-smoothing: auto;
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
@@ -25,6 +23,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  font-family: 'Times New Roman', serif;
 }
 
 #root {
@@ -39,15 +38,15 @@ img[style*="imageRendering"] {
   image-rendering: crisp-edges;
 }
 
-/* Pixelated font class */
+/* Pixelated font class for headings */
 .font-pixel {
   font-family: 'Press Start 2P', monospace;
   -webkit-font-smoothing: none;
   -moz-osx-font-smoothing: auto;
 }
 
-/* Global pixelated font */
-body {
+/* All headings use pixelated font */
+h1, h2, h3, h4, h5, h6 {
   font-family: 'Press Start 2P', monospace;
   -webkit-font-smoothing: none;
   -moz-osx-font-smoothing: auto;

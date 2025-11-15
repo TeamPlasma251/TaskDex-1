@@ -3,7 +3,7 @@ import { formatTime } from '../utils/formatTime.js';
 import { getGifUrl } from '../utils/sprites.js';
 
 const style = {
-  card: "bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700",
+  card: "bg-white p-6 rounded-xl shadow-lg border-2 border-gray-300",
   button: "px-6 py-3 rounded-xl font-bold transition-colors duration-300 shadow-md",
   secondaryButton: "bg-gray-600 text-white hover:bg-gray-700",
 };
@@ -71,24 +71,24 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
   };
   
   return (
-    <div className="flex flex-col items-center min-h-screen p-4 bg-gray-900 text-white">
+    <div className="flex flex-col items-center min-h-screen p-4 bg-[#f5f5dc] text-black">
       <div className={style.card + " max-w-4xl w-full mt-12"}>
-        <h2 className={`text-4xl font-bold mb-4 text-center ${headerColor}`}>
+        <h2 className={`text-4xl font-bold mb-4 text-center ${isBreak ? 'text-green-600' : 'text-red-600'}`}>
           {phase === 'Study' ? `Focusing on ${sessionType} Flight` : 'BREAK TIME!'}
         </h2>
         
         {/* Timer Display */}
         <div className="text-center mb-6">
-          <div className="text-7xl font-mono font-extrabold mb-2 text-white bg-gray-700/50 p-4 rounded-lg shadow-inner">
+          <div className="text-7xl font-mono font-extrabold mb-2 text-black bg-gray-100 p-4 rounded-lg shadow-inner border-2 border-gray-300">
             {formatTime(timeLeft)}
           </div>
-          <p className="text-gray-400 text-lg">
+          <p className="text-gray-700 text-lg">
             {phase} Session | {sessionConfig.studyTime} Min Study / {sessionConfig.restTime} Min Rest
           </p>
         </div>
         
         {/* Progress Bar */}
-        <div className="w-full bg-gray-700 rounded-full h-3 mb-8">
+        <div className="w-full bg-gray-300 rounded-full h-3 mb-8">
           <div className={`h-3 rounded-full ${isBreak ? 'bg-green-500' : 'bg-red-500'}`} style={{ width: `${progress}%` }}></div>
         </div>
         
@@ -123,9 +123,9 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
             onError={(e) => { e.target.onerror = null; e.target.src = getGifUrl("Placeholder"); }}
           />
           
-          <div className="absolute top-4 right-4 bg-gray-800/80 p-2 rounded-lg text-sm">
-            <p className="text-purple-400 font-semibold">Flight Zone: {sessionType}</p>
-            <p className="text-gray-300">Partner: {partnerName}</p>
+          <div className="absolute top-4 right-4 bg-white/90 p-2 rounded-lg text-sm border-2 border-gray-300">
+            <p className="text-red-600 font-semibold">Flight Zone: {sessionType}</p>
+            <p className="text-gray-700">Partner: {partnerName}</p>
           </div>
         </div>
         
