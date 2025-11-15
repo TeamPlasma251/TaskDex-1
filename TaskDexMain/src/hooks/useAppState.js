@@ -315,19 +315,44 @@ export function useAppState() {
       return;
     }
     
-    // Find and update the partner in the inventory
-    const newInventory = userData.pokemon_inventory.map(mon => {
-      if (mon.id === partner.id) {
-        return {
-          ...mon,
-          currentName: nextMonData.name, // Update name
-          pokedexId: nextMonData.id,     // Update ID
-          stage: nextMonData.evoStage,     // Update stage
-          exp: 0 // Reset EXP for the new form
-        };
-      }
-      return mon;
-    });
+    // Check if the evolved form already exists in the inventory
+    const existingEvoIndex = userData.pokemon_inventory.findIndex(
+      p => p.pokedexId === nextMonData.id && !p.isPartner
+    );
+    
+    let newInventory;
+    if (existingEvoIndex !== -1) {
+      // Evolved form already exists - merge by adding remaining EXP
+      const remainingExp = partner.exp - evoData.evoExp;
+      newInventory = userData.pokemon_inventory.map((mon, index) => {
+        if (mon.id === partner.id) {
+          // Remove the pre-evolution form
+          return null;
+        }
+        if (index === existingEvoIndex) {
+          // Add remaining EXP to existing evolved form
+          return {
+            ...mon,
+            exp: (mon.exp || 0) + Math.max(0, remainingExp)
+          };
+        }
+        return mon;
+      }).filter(mon => mon !== null);
+    } else {
+      // Evolved form doesn't exist - update the partner in place
+      newInventory = userData.pokemon_inventory.map(mon => {
+        if (mon.id === partner.id) {
+          return {
+            ...mon,
+            currentName: nextMonData.name, // Update name
+            pokedexId: nextMonData.id,     // Update ID
+            stage: nextMonData.evoStage,   // Update stage
+            exp: 0 // Reset EXP for the new form
+          };
+        }
+        return mon;
+      });
+    }
     
     // Add new species to Pokedex if it's not already there
     const newPokedex = [...userData.pokedex];

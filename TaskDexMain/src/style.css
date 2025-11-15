@@ -1,6 +1,7 @@
 /* Base styles - Tailwind CSS handles most styling */
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Jersey+15&display=swap');
 
 :root {
   font-family: 'Times New Roman', serif;
@@ -204,7 +205,7 @@ html {
   position: relative;
   transition: transform var(--pokemon-animation-duration) var(--pokemon-animation-ease),
               box-shadow var(--pokemon-animation-duration) var(--pokemon-animation-ease);
-  overflow: visible;
+  overflow: hidden;
 }
 
 .pokemon-card::before {
@@ -353,6 +354,13 @@ html {
   animation: auraBurst 400ms var(--pokemon-animation-ease);
 }
 
+/* Disable the round aura animation for the partner sprite in the top-right nav panel */
+.top-right-panel .partner-sprite-active::after,
+.top-right-panel .partner-sprite-active:hover::after {
+  animation: none !important;
+  display: none !important;
+}
+
 /* Smooth Hover Lift Animation */
 .hover-lift {
   transition: transform var(--pokemon-animation-duration) var(--pokemon-animation-ease);
@@ -459,6 +467,14 @@ html {
 .logo-text .site-title { font-size: 16px; }
 .logo-text .site-tagline { font-size: 11px; opacity: 0.95; }
 
+/* Times New Roman for Main Tab Titles */
+.main-tab-title {
+  font-family: 'Times New Roman', serif;
+  font-size: 2.5rem;
+  font-weight: bold;
+  line-height: 1;
+}
+
 
 /* ARIA Live Region Styling */
 .aria-live-region {
@@ -483,4 +499,43 @@ html {
 
 .task-add-animation {
   animation: taskAdd 300ms var(--pokemon-animation-ease);
+}
+
+/* Card layout helpers for Pokedex / My Pokémon grids */
+.dex-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%; /* stretch to grid row height */
+  box-sizing: border-box;
+  padding: 0.75rem 0.5rem 1.5rem; /* extra bottom padding to ensure EXP bar is visible */
+}
+
+.dex-sprite {
+  width: 72px;
+  height: 72px;
+  image-rendering: pixelated;
+}
+
+.exp-bar-bg {
+  width: 100%;
+  background: #e5e7eb; /* gray-200 */
+  border-radius: 9999px;
+  height: 10px;
+  overflow: hidden;
+  margin-bottom: 10px; /* spacing from card bottom */
+}
+
+.exp-bar-fill {
+  height: 100%;
+  background: #2563eb; /* blue-600 */
+  border-radius: 9999px;
+  transition: width 280ms var(--pokemon-animation-ease);
+}
+
+.exp-text {
+  margin: 4px 0 0 0;
+  font-size: 0.75rem;
+  font-weight: 600;
 }

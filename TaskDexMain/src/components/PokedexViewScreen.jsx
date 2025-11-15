@@ -11,21 +11,25 @@ export default function PokedexViewScreen({ setScreen, userData }) {
   const sortedPokedex = [...(userData?.pokedex || [])].sort((a, b) => a.id - b.id);
   
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-[#f5f5dc] text-black">
-      <div className={style.card + " max-w-4xl w-full text-center"}>
-        <h2 className="text-3xl font-bold mb-6 text-black">Pokédex View</h2>
-        <h3 className="text-xl font-semibold mb-4 text-black">Registered Species ({userData?.pokedex.length || 0})</h3>
-        <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 max-h-96 overflow-y-auto p-4 bg-gray-100 rounded-lg mx-auto border-2 border-gray-300">
+    <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-[#f5f5dc] text-black">
+      <div className={style.card + " max-w-7xl w-full text-center"}>
+        <h2 className="main-tab-title mb-8 text-black">Pokédex View</h2>
+        <h3 className="text-2xl font-semibold mb-8 text-black">Registered Species ({userData?.pokedex.length || 0})</h3>
+        <div 
+          className="grid grid-cols-9 md:grid-cols-9 lg:grid-cols-9 gap-6 overflow-y-auto p-6 bg-gray-100 rounded-lg mx-auto border-2 border-gray-300"
+          style={{ gridAutoRows: '150px', maxHeight: 'calc(6 * 150px + 2 * 1.5rem)' }}
+        >
           {sortedPokedex.map(mon => (
-            <div key={mon.id} className="text-center p-2 bg-white rounded-lg border-2 border-gray-300">
-              <img 
-                src={getGifUrl(mon.name)} 
-                alt={mon.name}
-                className="mx-auto" 
-                style={{ width: '56px', height: '56px', imageRendering: 'pixelated' }}
-                onError={(e) => { e.target.onerror = null; e.target.src = getGifUrl("Placeholder"); }}
-              />
-              <p className="text-xs mt-1">{mon.name}</p>
+            <div key={mon.id} className="pokemon-card dex-card bg-white rounded-lg border-2 border-gray-300 hover:scale-105 transition-transform">
+              <div className="flex items-center justify-center mt-2">
+                <img 
+                  src={getGifUrl(mon.name)} 
+                  alt={mon.name}
+                  className="dex-sprite" 
+                  onError={(e) => { e.target.onerror = null; e.target.src = getGifUrl("Placeholder"); }}
+                />
+              </div>
+              <p className="text-xs font-semibold mt-2">{mon.name}</p>
             </div>
           ))}
         </div>
