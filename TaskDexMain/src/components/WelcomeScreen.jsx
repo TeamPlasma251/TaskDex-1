@@ -59,7 +59,7 @@ export default function WelcomeScreen({ setScreen }) {
           {/* Left Column - Text Content */}
           <div className="space-y-8">
             <h1 className={`text-5xl md:text-6xl lg:text-7xl font-bold text-black leading-tight welcome-text-smooth ${isVisible ? 'text-reveal' : 'opacity-0'}`}>
-              Gamify Your Productivity
+              Focus. Capture. Evolve.
             </h1>
             <p className={`text-xl md:text-2xl text-gray-700 leading-relaxed welcome-body-text ${isVisible ? 'text-reveal-delay-1' : 'opacity-0'}`}>
               Every Pomodoro session is a step forward in your Pokémon adventure.
@@ -90,20 +90,8 @@ export default function WelcomeScreen({ setScreen }) {
       {/* Key Features Section */}
       <div className="max-w-7xl mx-auto px-6 py-16 md:py-24">
         <div className="space-y-12">
-          <div className="text-center space-y-4">
-            <p className="text-[#dc2626] text-sm font-semibold uppercase tracking-wide welcome-body-text">
-              Key Features
-            </p>
-            <h2 className="text-4xl md:text-5xl font-bold text-black welcome-text-smooth">
-              Gamify Your Productivity
-            </h2>
-            <p className="text-lg text-gray-700 max-w-2xl mx-auto welcome-body-text">
-              Every Pomodoro session is a step forward in your Pokémon adventure.
-            </p>
-          </div>
-
           {/* Features Grid */}
-          <div className="grid md:grid-cols-2 gap-6 mt-12">
+          <div className="grid md:grid-cols-2 gap-6">
             {features.map((feature, index) => (
               <div
                 key={index}
