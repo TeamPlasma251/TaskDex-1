@@ -11,7 +11,7 @@ const style = {
   input: "w-full p-3 rounded-lg bg-white border-2 border-gray-300 text-black focus:border-red-500 focus:ring-2 focus:ring-red-500",
 };
 
-// Task Start Modal Component
+// Task Start Modal Component (type removed from display)
 function TaskStartModal({ task, onStart, onCancel, getTypeButtonColor, onDelete }) {
   const [workDuration, setWorkDuration] = React.useState(30);
   const [breakDuration, setBreakDuration] = React.useState(5);
@@ -25,17 +25,14 @@ function TaskStartModal({ task, onStart, onCancel, getTypeButtonColor, onDelete 
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-        <div className="bg-white p-8 rounded-xl max-w-md w-full mx-4 border-2 border-gray-300 overflow-y-auto max-h-[90vh]">
+      <div className="bg-white p-8 rounded-xl max-w-md w-full mx-4 border-2 border-gray-300 overflow-y-auto max-h-[90vh]">
         <h3 className="text-3xl font-bold mb-4 text-black text-center">{task.name}</h3>
-        <div className="mb-4 text-center">
-          <span className={`px-4 py-2 rounded-lg text-sm font-bold ${getTypeButtonColor(task.type)}`}>
-            {task.type}
-          </span>
-        </div>
+
+        {/* DESCRIPTION (no type badge displayed) */}
         {task.description && (
           <p className="text-gray-700 mb-6 text-center">{task.description}</p>
         )}
-        
+
         <div className="space-y-4 mb-6">
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -49,7 +46,7 @@ function TaskStartModal({ task, onStart, onCancel, getTypeButtonColor, onDelete 
               min="20"
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Break Duration (minutes) - Minimum 1:
@@ -62,7 +59,7 @@ function TaskStartModal({ task, onStart, onCancel, getTypeButtonColor, onDelete 
               min="1"
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Number of Sessions - Minimum 1:
@@ -76,7 +73,7 @@ function TaskStartModal({ task, onStart, onCancel, getTypeButtonColor, onDelete 
             />
           </div>
         </div>
-        
+
         <div className="flex space-x-4">
           <button
             className={style.button + " " + style.primaryButton + " flex-1"}
@@ -114,13 +111,13 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
   const [clickedTaskId, setClickedTaskId] = useState(null);
   const [newTaskId, setNewTaskId] = useState(null);
   const ariaLiveRef = useRef(null);
-  
+
   // Show welcome message only once per session (after login)
   const [showWelcome, setShowWelcome] = useState(() => {
     const hasSeenWelcome = sessionStorage.getItem('hasSeenWelcome');
     return !hasSeenWelcome;
   });
-  
+
   // Welcome message stays until user dismisses it
   const handleDismissWelcome = () => {
     setShowWelcome(false);
@@ -140,37 +137,37 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
 
   const handleSaveTask = () => {
     if (!taskName.trim()) return;
-    
+
     const newTask = {
       id: crypto.randomUUID(),
       name: taskName,
-      type: taskType,
+      type: taskType, // keep type in data but don't display it as text
       description: taskDescription,
       createdAt: new Date().toISOString(),
       completed: false,
     };
-    
+
     setNewTaskId(newTask.id);
     const updatedTasks = [...(tasks || []), newTask];
     setTasks(updatedTasks);
-    
+
     // Announce to screen readers
     announceToScreenReader(`Task "${taskName}" added successfully`);
-    
+
     // Reset form
     setTaskName('');
     setTaskType('Psychic');
     setTaskDescription('');
     setShowAddTask(false);
-    
+
     // Clear animation class after animation completes
     setTimeout(() => setNewTaskId(null), 300);
   };
 
   const handleStartTask = (task, workDuration, breakDuration, numSessions) => {
-    setSessionConfig({ 
-      type: task.type, 
-      studyTime: workDuration, 
+    setSessionConfig({
+      type: task.type,
+      studyTime: workDuration,
       restTime: breakDuration,
       taskId: task.id,
       taskName: task.name,
@@ -183,14 +180,14 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
 
   const handleTaskClick = (task, event) => {
     setClickedTaskId(task.id);
-    
+
     // Add particle burst effect
     const card = event.currentTarget;
     card.classList.add('particle-burst');
     setTimeout(() => {
       card.classList.remove('particle-burst');
     }, 400);
-    
+
     setTimeout(() => {
       setClickedTaskId(null);
       setSelectedTask(task);
@@ -251,24 +248,19 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
     return getGifUrl(pokemonName);
   };
 
-  // Use all type color utilities for badges/buttons
-  const getTypeButtonColor = (type) => {
-    return `${getTypeBgColor(type)} ${getTypeBorderColor(type)} text-black`;
-  };
-
   const trainerName = userData?.trainerName || 'Trainer';
   const firstPokemon = userData?.pokemon_inventory.find(p => p.isPartner)?.currentName || 'N/A';
 
   return (
     <div className="flex flex-col items-center min-h-screen p-4 bg-[#1a1a1a] text-white">
       {/* ARIA Live Region for Screen Reader Announcements */}
-      <div 
+      <div
         ref={ariaLiveRef}
-        className="aria-live-region" 
-        aria-live="polite" 
+        className="aria-live-region"
+        aria-live="polite"
         aria-atomic="true"
       ></div>
-      
+
       <div className={"bg-gray-800 p-6 rounded-xl shadow-lg border-2 border-gray-700 max-w-4xl w-full mt-8"}>
         {/* Welcome Message - Shows once after login */}
         {showWelcome && (
@@ -289,7 +281,7 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
             </div>
           </div>
         )}
-        
+
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-4xl font-bold text-white">My Tasks</h2>
           <button
@@ -314,32 +306,31 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
               const typeBgClass = getTypeBgColor(task.type);
               const typeRingClass = getTypeRingColor(task.type);
               const spriteUrl = getTaskSpriteUrl(task.type);
-              
+
               return (
                 <div
                   key={task.id}
                   role="listitem"
                   tabIndex={0}
+                  onKeyDown={(e) => handleTaskKeyDown(e, task)}
+                  onClick={(e) => handleTaskClick(task, e)}
+                  aria-label={`Task: ${task.name}. ${task.description ? `Description: ${task.description}` : ''} Click to start task.`}
+                  // Apply type background + border — badge removed
                   className={`pokemon-card p-6 rounded-xl border-2 cursor-pointer focus-ring hover-lift ${typeBorderClass} ${typeBgClass} text-black hover:ring-4 ${typeRingClass} hover:shadow-xl ${
                     clickedTaskId === task.id ? 'pokeball-click' : ''
                   } ${newTaskId === task.id ? 'task-add-animation' : ''}`}
-                  onClick={(e) => handleTaskClick(task, e)}
-                  onKeyDown={(e) => handleTaskKeyDown(e, task)}
-                  aria-label={`Task: ${task.name}, Type: ${task.type}. ${task.description ? `Description: ${task.description}` : ''} Click to start task.`}
                   style={{
                     '--pokemon-sprite-url': `url(${spriteUrl})`
                   }}
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <span className={`px-3 py-1 rounded-lg text-sm font-bold border-2 ${getTypeButtonColor(task.type)}`}>
-                          {task.type}
-                        </span>
+                      <div className="mb-2">
+                        {/* NAME ONLY — type badge removed */}
                         <h3 className="text-2xl font-bold text-black">{task.name}</h3>
                       </div>
                       {task.description && (
-                        <p className="text-gray-800 mt-2">{task.description}</p>
+                        <p className="mt-2 text-black">{task.description}</p>
                       )}
                     </div>
                   </div>
@@ -350,12 +341,12 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
         </div>
       </div>
 
-      {/* Add Task Modal */}
+      {/* Add Task Modal (keeps type picker in modal so type is still selectable) */}
       {showAddTask && (
-          <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-            <div className="bg-white p-8 rounded-xl max-w-lg w-full mx-4 border-2 border-gray-300 overflow-y-auto max-h-[90vh]">
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-xl max-w-lg w-full mx-4 border-2 border-gray-300 overflow-y-auto max-h-[90vh]">
             <h3 className="text-3xl font-bold mb-6 text-black">Add New Task</h3>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Task Name:</label>
@@ -376,8 +367,8 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
                       key={type}
                       className={`py-3 rounded-lg font-bold transition-all duration-200 border-2 ${
                         taskType === type
-                          ? `${getTypeButtonColor(type)} border-black shadow-lg scale-105`
-                          : `${getTypeBgColor(type)} text-black border-gray-300 hover:scale-105` 
+                          ? `${getTypeBgColor(type)} ${getTypeBorderColor(type)} border-black shadow-lg scale-105`
+                          : `${getTypeBgColor(type)} text-black border-gray-300 hover:scale-105`
                       }`}
                       onClick={() => setTaskType(type)}
                     >
@@ -425,11 +416,11 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
 
       {/* Start Task Modal */}
       {selectedTask && (
-        <TaskStartModal 
+        <TaskStartModal
           task={selectedTask}
           onStart={(workDuration, breakDuration, numSessions) => handleStartTask(selectedTask, workDuration, breakDuration, numSessions)}
           onCancel={() => setSelectedTask(null)}
-          getTypeButtonColor={getTypeButtonColor}
+          getTypeButtonColor={() => ''}
           onDelete={(task) => handleDeleteRequest(task)}
         />
       )}
@@ -460,4 +451,3 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
     </div>
   );
 }
-
