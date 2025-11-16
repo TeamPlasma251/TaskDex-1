@@ -68,6 +68,88 @@ export const POMODORO_THEMES = {
     textColor: '#ffffff',
     accentColor: '#a855f7',
   },
+  Bug: {
+    name: 'Bug',
+    // Bug themed environment
+    backgroundImage: '/themes/bug.jpg',
+    overlay: 'rgba(65, 105, 225, 0.4)', // Blue overlay
+    textColor: '#ffffff',
+    accentColor: '#4169e1',
+  },
+  Dark: {
+    name: 'Dark',
+    // Dark themed environment
+    backgroundImage: '/themes/dark.jpg',
+    overlay: 'rgba(30, 30, 30, 0.5)', // Dark overlay
+    textColor: '#ffffff',
+    accentColor: '#6b7280',
+  },
+  Dragon: {
+    name: 'Dragon',
+    // Dragon themed environment
+    backgroundImage: '/themes/dragon.jpg',
+    overlay: 'rgba(168, 85, 247, 0.4)', // Purple overlay
+    textColor: '#ffffff',
+    accentColor: '#a855f7',
+  },
+  Fighting: {
+    name: 'Fighting',
+    // Fighting themed environment
+    backgroundImage: '/themes/fighting.jpg',
+    overlay: 'rgba(239, 68, 68, 0.4)', // Red overlay
+    textColor: '#ffffff',
+    accentColor: '#ef4444',
+  },
+  Ground: {
+    name: 'Ground',
+    // Earth terrain with rocks and soil - browns, tans, earthy landscape
+    backgroundImage: '/themes/ground.png',
+    overlay: 'rgba(120, 82, 45, 0.4)', // Brown overlay
+    textColor: '#ffffff',
+    accentColor: '#b45309',
+  },
+  Ice: {
+    name: 'Ice',
+    // Icy tundra with crystalline structures - blues, whites, glaciers, snowflakes
+    backgroundImage: '/themes/ice.avif',
+    overlay: 'rgba(59, 130, 246, 0.4)', // Blue overlay
+    textColor: '#ffffff',
+    accentColor: '#3b82f6',
+  },
+  Normal: {
+    name: 'Normal',
+    // Normal themed environment
+    backgroundImage: '/themes/normal.jpg',
+    overlay: 'rgba(107, 114, 128, 0.4)', // Gray overlay
+    textColor: '#ffffff',
+    accentColor: '#6b7280',
+  },
+  Steel: {
+    name: 'Steel',
+    // Steel themed environment
+    backgroundImage: '/themes/steel.jpg',
+    overlay: 'rgba(148, 163, 184, 0.4)', // Slate overlay
+    textColor: '#ffffff',
+    accentColor: '#94a3b8',
+  },
+  Rock: {
+    name: 'Rock',
+    // Earth terrain with rocks and soil - browns, tans, earthy landscape
+    backgroundImage: '/themes/rock.png',
+    overlay: 'rgba(120, 82, 45, 0.4)', // Brown overlay
+    textColor: '#ffffff',
+    accentColor: '#b45309',
+  },
+  Poison: {
+    name: 'Poison',
+    // Poison themed environment
+    backgroundImage: '/themes/poison.jpg',
+    overlay: 'rgba(168, 85, 247, 0.4)', // Purple overlay
+    textColor: '#ffffff',
+    accentColor: '#a855f7',
+  },
+  
+
 };
 
 // Get theme by type
