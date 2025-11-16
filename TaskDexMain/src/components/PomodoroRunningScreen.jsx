@@ -11,12 +11,13 @@ const style = {
   secondaryButton: "bg-gray-600 text-white hover:bg-gray-700",
 };
 
-export default function PomodoroRunningScreen({ setScreen, sessionConfig, userData, handleSessionComplete, saveCaughtPokemon }) {
+export default function PomodoroRunningScreen({ setScreen, sessionConfig, userData, handleSessionComplete, saveCaughtPokemon, groupSessionData = null }) {
   const workDuration = sessionConfig?.studyTime || 30;
   const breakDuration = sessionConfig?.restTime || 5;
   const numSessions = sessionConfig?.numSessions || 4;
-  const taskName = sessionConfig?.taskName || 'Focus Session';
+  const taskName = sessionConfig?.taskName || sessionConfig?.sessionName || 'Focus Session';
   const sessionType = sessionConfig?.type || 'Fire';
+  const isGroupSession = !!groupSessionData;
   
   // State for current session tracking
   const [currentSession, setCurrentSession] = React.useState(1);
@@ -274,6 +275,18 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
         >
           {taskName}
         </h2>
+        
+        {/* Group Session Info */}
+        {isGroupSession && (
+          <div className="mb-6 p-3 bg-purple-100 border-2 border-purple-500 rounded-lg text-center">
+            <p className="text-purple-900 font-bold text-sm">
+              🎮 Group Session with {groupSessionData?.respondentName || 'Friend'}
+            </p>
+            <p className="text-purple-700 text-xs mt-1">
+              Both players must stay focused!
+            </p>
+          </div>
+        )}
         
         {/* Timer Display */}
         <div className="text-center mb-6">

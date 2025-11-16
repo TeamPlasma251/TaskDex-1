@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
-import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc, deleteField, runTransaction } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc, deleteField, deleteDoc, runTransaction } from 'firebase/firestore';
 import { app, db } from '../config/firebase.js';
 import { getUserData, saveUserData, initializeUserData } from '../utils/storage.js';
 import { getPokemonDataByName, getRandomWildPokemon, POKEMON_DATA } from '../data/pokemonData.js';
@@ -13,6 +13,8 @@ export function useAppState() {
   const [authReady, setAuthReady] = useState(false);
   const [sessionConfig, setSessionConfig] = useState(null);
   const [tasks, setTasks] = useState([]);
+  const [groupSessionData, setGroupSessionData] = useState(null);
+  const [friendsDetail, setFriendsDetail] = useState([]);
 
   // Initialize Firebase Auth listener
   useEffect(() => {
@@ -573,6 +575,160 @@ export function useAppState() {
     return { hasNewPokemon, hasEvolved };
   }, [user, userData, db]);
 
+  // Group Session Handlers
+  const handleGroupSessionApproval = useCallback(async (sessionConfig) => {
+    if (!sessionConfig) return;
+
+    const sessionId = crypto.randomUUID();
+    const sessionData = {
+      ...sessionConfig,
+      sessionId,
+    };
+
+    // Save to Firestore if logged in
+    if (user && db) {
+      try {
+        const groupSessionRef = doc(
+          db,
+          'artifacts',
+          'default-app-id',
+          'group_sessions',
+          sessionId
+        );
+        await setDoc(groupSessionRef, sessionData);
+
+        // Also save to initiator and respondent's user profiles
+        const initiatorDocRef = doc(
+          db,
+          'artifacts',
+          'default-app-id',
+          'users',
+          user.uid,
+          'profile',
+          'data'
+        );
+        await updateDoc(initiatorDocRef, {
+          activeGroupSession: sessionId,
+        });
+      } catch (error) {
+        console.error('Error saving group session:', error);
+      }
+    }
+
+    // Save to localStorage as backup
+    const groupSessions = JSON.parse(localStorage.getItem('groupSessions') || '{}');
+    groupSessions[sessionId] = sessionData;
+    localStorage.setItem('groupSessions', JSON.stringify(groupSessions));
+
+    setGroupSessionData(sessionData);
+  }, [user, db]);
+
+  const handleGroupSessionReject = useCallback(async (sessionId) => {
+    if (!sessionId) return;
+
+    // Delete from Firestore
+    if (user && db) {
+      try {
+        const groupSessionRef = doc(
+          db,
+          'artifacts',
+          'default-app-id',
+          'group_sessions',
+          sessionId
+        );
+        await deleteDoc(groupSessionRef);
+
+        // Clear from user profile
+        const userDocRef = doc(
+          db,
+          'artifacts',
+          'default-app-id',
+          'users',
+          user.uid,
+          'profile',
+          'data'
+        );
+        await updateDoc(userDocRef, {
+          activeGroupSession: deleteField(),
+        });
+      } catch (error) {
+        console.error('Error rejecting group session:', error);
+      }
+    }
+
+    // Clear from localStorage
+    const groupSessions = JSON.parse(localStorage.getItem('groupSessions') || '{}');
+    delete groupSessions[sessionId];
+    localStorage.setItem('groupSessions', JSON.stringify(groupSessions));
+
+    setGroupSessionData(null);
+  }, [user, db]);
+
+  // Fetch group session data on mount/user change
+  useEffect(() => {
+    if (!user || !db || !userData) return;
+
+    if (userData.activeGroupSession) {
+      const groupSessionRef = doc(
+        db,
+        'artifacts',
+        'default-app-id',
+        'group_sessions',
+        userData.activeGroupSession
+      );
+
+      const unsubscribe = onSnapshot(groupSessionRef, (docSnap) => {
+        if (docSnap.exists()) {
+          setGroupSessionData(docSnap.data());
+        }
+      });
+
+      return () => unsubscribe();
+    }
+  }, [user, userData, db]);
+
+  // Fetch friends detail
+  const fetchFriendsDetail = useCallback(async () => {
+    if (!userData?.friends || userData.friends.length === 0) {
+      setFriendsDetail([]);
+      return;
+    }
+
+    const friends = [];
+    for (const friendId of userData.friends) {
+      try {
+        const friendDocRef = doc(
+          db,
+          'artifacts',
+          'default-app-id',
+          'users',
+          friendId,
+          'profile',
+          'data'
+        );
+        const friendSnap = await getDoc(friendDocRef);
+        if (friendSnap.exists()) {
+          const friendData = friendSnap.data();
+          friends.push({
+            id: friendId,
+            trainerName: friendData.trainerName,
+            trainerGender: friendData.trainerGender,
+            isProfileComplete: friendData.isProfileComplete,
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching friend:', friendId, error);
+      }
+    }
+    setFriendsDetail(friends);
+  }, [userData, db]);
+
+  useEffect(() => {
+    if (userData?.friends && userData.friends.length > 0 && db) {
+      fetchFriendsDetail();
+    }
+  }, [userData?.friends, db, fetchFriendsDetail]);
+
   return {
     user,
     userData,
@@ -612,5 +768,10 @@ export function useAppState() {
         });
       }
     },
+    groupSessionData,
+    setGroupSessionData,
+    handleGroupSessionApproval,
+    handleGroupSessionReject,
+    friendsDetail,
   };
 }

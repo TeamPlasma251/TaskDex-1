@@ -35,6 +35,10 @@ function App() {
     saveCaughtPokemon,
     tasks,
     setTasks,
+    groupSessionData,
+    handleGroupSessionApproval,
+    handleGroupSessionReject,
+    friendsDetail,
   } = useAppState();
 
   if (loading) {
@@ -92,10 +96,11 @@ function App() {
         return (
           <PomodoroRunningScreen
             setScreen={setScreen}
-            sessionConfig={sessionConfig}
+            sessionConfig={sessionConfig || groupSessionData?.sessionConfig}
             userData={userData}
             handleSessionComplete={handleSessionComplete}
             saveCaughtPokemon={saveCaughtPokemon}
+            groupSessionData={groupSessionData}
           />
         );
       
@@ -129,7 +134,16 @@ function App() {
         return <AchievementsViewScreen setScreen={setScreen} userData={userData} />;
       
       case 'GROUP_LOBBY':
-        return <GroupLobbyScreen setScreen={setScreen} />;
+        return (
+          <GroupLobbyScreen 
+            setScreen={setScreen} 
+            userData={userData}
+            friendsDetail={friendsDetail}
+            handleGroupSessionApproval={handleGroupSessionApproval}
+            handleGroupSessionReject={handleGroupSessionReject}
+            groupSessionData={groupSessionData}
+          />
+        );
       
       case 'TASKS_SCREEN':
         return (
