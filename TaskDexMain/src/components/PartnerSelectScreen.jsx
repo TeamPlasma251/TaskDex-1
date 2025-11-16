@@ -49,7 +49,7 @@ export default function PartnerSelectScreen({
               <img 
                 src={getGifUrl(currentPartner.currentName)} 
                 alt="Partner" 
-              className={`bg-gray-800 p-2 border-4 border-blue-500 rounded-none`}
+              className={`bg-gray-800 p-2 border-4 border-gray-700 rounded-none`}
               style={{ width: '120px', height: '120px', imageRendering: 'pixelated', objectFit: 'contain' }}
               onError={(e) => { e.target.onerror = null; e.target.src = getGifUrl("Placeholder"); }}
             />

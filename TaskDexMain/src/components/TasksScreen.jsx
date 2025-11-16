@@ -227,7 +227,7 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
   const firstPokemon = userData?.pokemon_inventory.find(p => p.isPartner)?.currentName || 'N/A';
 
   return (
-    <div className="flex flex-col items-center min-h-screen p-4 bg-[#f5f5dc] text-black">
+    <div className="flex flex-col items-center min-h-screen p-4 bg-[#1a1a1a] text-white">
       {/* ARIA Live Region for Screen Reader Announcements */}
       <div 
         ref={ariaLiveRef}
@@ -236,7 +236,7 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
         aria-atomic="true"
       ></div>
       
-      <div className={style.card + " max-w-4xl w-full mt-8"}>
+      <div className={"bg-gray-800 p-6 rounded-xl shadow-lg border-2 border-gray-700 max-w-4xl w-full mt-8"}>
         {/* Welcome Message - Shows once after login */}
         {showWelcome && (
           <div className="mb-6 p-4 bg-red-50 border-2 border-red-200 rounded-xl">
@@ -258,7 +258,7 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
         )}
         
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-4xl font-bold text-black">My Tasks</h2>
+          <h2 className="text-4xl font-bold text-white">My Tasks</h2>
           <button
             className={`${style.button} ${style.primaryButton} text-lg px-8 py-4 focus-ring hover-lift`}
             onClick={() => setShowAddTask(true)}
