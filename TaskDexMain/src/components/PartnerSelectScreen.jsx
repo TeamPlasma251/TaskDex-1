@@ -35,10 +35,11 @@ export default function PartnerSelectScreen({
         {/* Trainer and Partner Display */}
         <div className="flex justify-center items-center space-x-12 bg-gray-900 p-8 rounded-xl mb-10 border-2 border-gray-700 shadow-lg">
           <div className="text-center transform hover:scale-105 transition-transform duration-300">
+            {/* trainer avatar - bounding removed */}
             <img 
               src={getGifUrl(trainerSprite)} 
               alt="Trainer" 
-              className="bg-gray-800 rounded-full p-2 border-2 border-blue-500"
+              className="mx-auto"
               style={{ width: '120px', height: '120px', imageRendering: 'pixelated' }}
               onError={(e) => { e.target.onerror = null; e.target.src = getGifUrl("Placeholder"); }}
             />
@@ -46,14 +47,15 @@ export default function PartnerSelectScreen({
           </div>
           {currentPartner && (
             <div className="text-center transform hover:scale-105 transition-transform duration-300">
+              {/* partner image - straight bounding removed */}
               <img 
                 src={getGifUrl(currentPartner.currentName)} 
                 alt="Partner" 
-              className={`bg-gray-800 p-2 border-4 border-gray-700 rounded-none`}
-              style={{ width: '120px', height: '120px', imageRendering: 'pixelated', objectFit: 'contain' }}
-              onError={(e) => { e.target.onerror = null; e.target.src = getGifUrl("Placeholder"); }}
-            />
-            <p className="mt-3 text-lg font-semibold text-white">{currentPartner.currentName}</p>
+                className="mx-auto"
+                style={{ width: '120px', height: '120px', imageRendering: 'pixelated', objectFit: 'contain' }}
+                onError={(e) => { e.target.onerror = null; e.target.src = getGifUrl("Placeholder"); }}
+              />
+              <p className="mt-3 text-lg font-semibold text-white">{currentPartner.currentName}</p>
               {/* EXP Display */}
               {partnerData && partnerData.evoExp !== -1 ? (
                 <div className="mt-3">
@@ -177,5 +179,3 @@ export default function PartnerSelectScreen({
     </div>
   );
 }
-
-
