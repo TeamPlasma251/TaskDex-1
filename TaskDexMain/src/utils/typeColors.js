@@ -21,48 +21,47 @@ const typeHexColors = {
 };
 
 export const getTypeHoverColor = (type) => {
-  // Use Tailwind if possible, else fallback to inline style
   const tw = {
-    Grass: 'hover:bg-green-600 hover:ring-green-500',
-    Fire: 'hover:bg-orange-500 hover:ring-orange-400',
-    Water: 'hover:bg-blue-600 hover:ring-blue-500',
-    Electric: 'hover:bg-yellow-400 hover:ring-yellow-300',
-    Psychic: 'hover:bg-pink-400 hover:ring-pink-400',
-    Ghost: 'hover:bg-indigo-800 hover:ring-indigo-700',
-    Bug: 'hover:bg-lime-500 hover:ring-lime-400',
-    Dark: 'hover:bg-gray-700 hover:ring-gray-600',
-    Dragon: 'hover:bg-violet-700 hover:ring-violet-600',
-    Fighting: 'hover:bg-red-700 hover:ring-red-600',
-    Ground: 'hover:bg-yellow-700 hover:ring-yellow-600',
-    Ice: 'hover:bg-cyan-200 hover:ring-cyan-300',
+    Grass: 'hover:bg-green-500 hover:ring-green-400',
+    Fire: 'hover:bg-orange-400 hover:ring-orange-300',
+    Water: 'hover:bg-blue-500 hover:ring-blue-400',
+    Electric: 'hover:bg-yellow-300 hover:ring-yellow-200',
+    Psychic: 'hover:bg-pink-400 hover:ring-pink-300',
+    Ghost: 'hover:bg-indigo-600 hover:ring-indigo-500',
+    Bug: 'hover:bg-lime-400 hover:ring-lime-300',
+    Dark: 'hover:bg-gray-600 hover:ring-gray-500',
+    Dragon: 'hover:bg-violet-600 hover:ring-violet-500',
+    Fighting: 'hover:bg-red-600 hover:ring-red-500',
+    Ground: 'hover:bg-yellow-500 hover:ring-yellow-400',
+    Ice: 'hover:bg-cyan-300 hover:ring-cyan-200',
     Normal: 'hover:bg-gray-400 hover:ring-gray-300',
     Poison: 'hover:bg-purple-500 hover:ring-purple-400',
-    Rock: 'hover:bg-yellow-800 hover:ring-yellow-700',
-    Steel: 'hover:bg-gray-300 hover:ring-gray-400',
+    Rock: 'hover:bg-yellow-600 hover:ring-yellow-500',
+    Steel: 'hover:bg-gray-300 hover:ring-gray-200',
   };
   if (tw[type]) return tw[type];
   if (typeHexColors[type]) return `hover:bg-[${typeHexColors[type]}]`;
-  return 'hover:bg-gray-600 hover:ring-gray-500';
+  return 'hover:bg-gray-500 hover:ring-gray-400';
 };
 
 export const getTypeRingColor = (type) => {
   const tw = {
     Grass: 'ring-green-400',
-    Fire: 'ring-orange-400',
+    Fire: 'ring-orange-300',
     Water: 'ring-blue-400',
-    Electric: 'ring-yellow-300',
-    Psychic: 'ring-pink-400',
-    Ghost: 'ring-indigo-700',
-    Bug: 'ring-lime-400',
-    Dark: 'ring-gray-600',
-    Dragon: 'ring-violet-600',
-    Fighting: 'ring-red-600',
-    Ground: 'ring-yellow-600',
-    Ice: 'ring-cyan-300',
+    Electric: 'ring-yellow-200',
+    Psychic: 'ring-pink-300',
+    Ghost: 'ring-indigo-500',
+    Bug: 'ring-lime-300',
+    Dark: 'ring-gray-500',
+    Dragon: 'ring-violet-500',
+    Fighting: 'ring-red-500',
+    Ground: 'ring-yellow-400',
+    Ice: 'ring-cyan-200',
     Normal: 'ring-gray-300',
     Poison: 'ring-purple-400',
-    Rock: 'ring-yellow-700',
-    Steel: 'ring-gray-400',
+    Rock: 'ring-yellow-500',
+    Steel: 'ring-gray-200',
   };
   if (tw[type]) return tw[type];
   if (typeHexColors[type]) return `ring-[${typeHexColors[type]}]`;
@@ -71,21 +70,21 @@ export const getTypeRingColor = (type) => {
 
 export const getTypeBorderColor = (type) => {
   const tw = {
-    Grass: 'border-green-600',
-    Fire: 'border-orange-500',
-    Water: 'border-blue-600',
-    Electric: 'border-yellow-400',
+    Grass: 'border-green-500',
+    Fire: 'border-orange-400',
+    Water: 'border-blue-500',
+    Electric: 'border-yellow-300',
     Psychic: 'border-pink-400',
-    Ghost: 'border-indigo-800',
-    Bug: 'border-lime-500',
-    Dark: 'border-gray-700',
-    Dragon: 'border-violet-700',
-    Fighting: 'border-red-700',
-    Ground: 'border-yellow-700',
-    Ice: 'border-cyan-200',
+    Ghost: 'border-indigo-600',
+    Bug: 'border-lime-400',
+    Dark: 'border-gray-600',
+    Dragon: 'border-violet-600',
+    Fighting: 'border-red-600',
+    Ground: 'border-yellow-500',
+    Ice: 'border-cyan-300',
     Normal: 'border-gray-400',
     Poison: 'border-purple-500',
-    Rock: 'border-yellow-800',
+    Rock: 'border-yellow-600',
     Steel: 'border-gray-300',
   };
   if (tw[type]) return tw[type];
@@ -95,25 +94,49 @@ export const getTypeBorderColor = (type) => {
 
 export const getTypeBgColor = (type) => {
   const tw = {
-    Grass: 'bg-green-100',
-    Fire: 'bg-orange-100',
-    Water: 'bg-blue-100',
-    Electric: 'bg-yellow-100',
-    Psychic: 'bg-pink-100',
-    Ghost: 'bg-indigo-100',
-    Bug: 'bg-lime-100',
-    Dark: 'bg-gray-700',
-    Dragon: 'bg-violet-100',
-    Fighting: 'bg-red-200',
-    Ground: 'bg-yellow-200',
-    Ice: 'bg-cyan-100',
-    Normal: 'bg-gray-200',
-    Poison: 'bg-purple-100',
-    Rock: 'bg-yellow-300',
-    Steel: 'bg-gray-100',
+    Grass: 'bg-green-400',
+    Fire: 'bg-orange-300',
+    Water: 'bg-blue-400',
+    Electric: 'bg-yellow-200',
+    Psychic: 'bg-pink-300',
+    Ghost: 'bg-indigo-500',
+    Bug: 'bg-lime-300',
+    Dark: 'bg-gray-500',
+    Dragon: 'bg-violet-500',
+    Fighting: 'bg-red-500',
+    Ground: 'bg-yellow-400',
+    Ice: 'bg-cyan-200',
+    Normal: 'bg-gray-300',
+    Poison: 'bg-purple-400',
+    Rock: 'bg-yellow-500',
+    Steel: 'bg-gray-200',
   };
   if (tw[type]) return tw[type];
   if (typeHexColors[type]) return `bg-[${typeHexColors[type]}]`;
-  return 'bg-gray-100';
+  return 'bg-gray-300';
+};
+
+export const getTypeButtonColor = (type) => {
+  const tw = {
+    Grass: 'bg-green-800 text-white',
+    Fire: 'bg-orange-800 text-white',
+    Water: 'bg-blue-800 text-white',
+    Electric: 'bg-yellow-700 text-black',
+    Psychic: 'bg-pink-800 text-white',
+    Ghost: 'bg-indigo-900 text-white',
+    Bug: 'bg-lime-800 text-white',
+    Dark: 'bg-gray-900 text-white',
+    Dragon: 'bg-violet-900 text-white',
+    Fighting: 'bg-red-900 text-white',
+    Ground: 'bg-yellow-900 text-black',
+    Ice: 'bg-cyan-800 text-black',
+    Normal: 'bg-gray-700 text-white',
+    Poison: 'bg-purple-900 text-white',
+    Rock: 'bg-yellow-900 text-black',
+    Steel: 'bg-gray-800 text-white',
+  };
+  if (tw[type]) return tw[type];
+  if (typeHexColors[type]) return `bg-[${typeHexColors[type]}] text-white`;
+  return 'bg-gray-800 text-white';
 };
 
