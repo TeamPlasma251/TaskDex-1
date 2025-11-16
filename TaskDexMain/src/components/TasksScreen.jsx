@@ -333,7 +333,7 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-2">
-                        <span className={`px-3 py-1 rounded-lg text-sm font-bold border-2 ${getTypeButtonColor(task.type)} ${getTypeBorderColor(task.type)}`}>
+                        <span className={`px-3 py-1 rounded-lg text-sm font-bold border-2 ${getTypeButtonColor(task.type)}`}>
                           {task.type}
                         </span>
                         <h3 className="text-2xl font-bold text-black">{task.name}</h3>
