@@ -2,13 +2,28 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
 
+/* Global typography variables */
 :root {
-  font-family: 'Times New Roman', serif;
-  line-height: 1.6;
-  font-weight: 400;
-  color-scheme: light;
-  color: #000000;
-  background-color: #f5f5dc; /* beige */
+  --base-font-family: 'Jersey', 'Times New Roman', serif;
+  --base-font-size: 15px; /* user requested base size */
+  --line-height: 1.6;
+  --text-color: #000000;
+  --bg-color: #f5f5dc; /* beige */
+}
+
+* { box-sizing: border-box; }
+
+html { font-size: var(--base-font-size); }
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  font-family: var(--base-font-family);
+  font-size: var(--base-font-size);
+  line-height: var(--line-height);
+  color: var(--text-color);
+  background-color: var(--bg-color);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   image-rendering: pixelated;
@@ -16,16 +31,15 @@
   image-rendering: crisp-edges;
 }
 
-* {
-  box-sizing: border-box;
-}
+/* Utility classes to force Jersey or Times New Roman explicitly */
+.font-jersey { font-family: 'Jersey', 'Times New Roman', serif; }
+.font-times { font-family: 'Times New Roman', serif; }
 
-body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-  font-family: 'Times New Roman', serif;
-}
+/* Alias used in components */
+.nav-font-jersey { font-family: 'Jersey', 'Times New Roman', serif; }
+
+/* Small helper to normalize UI text size */
+.text-ui { font-size: 15px; }
 
 #root {
   width: 100%;
@@ -46,12 +60,21 @@ img[style*="imageRendering"] {
   -moz-osx-font-smoothing: auto;
 }
 
-/* All headings use pixelated font */
+/* Headings: use Jersey / Times New Roman for a classic look; keep pixel font class available */
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Press Start 2P', monospace;
-  -webkit-font-smoothing: none;
-  -moz-osx-font-smoothing: auto;
+  font-family: var(--base-font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0 0 0.5rem 0;
 }
+
+/* Normalize heading sizes relative to base 15px */
+h1 { font-size: 2rem; /* 30px */ }
+h2 { font-size: 1.5rem; /* 22.5px */ }
+h3 { font-size: 1.25rem; /* 18.75px */ }
+h4 { font-size: 1.125rem; /* 16.875px */ }
+h5 { font-size: 1rem; /* 15px */ }
+h6 { font-size: 0.875rem; /* 13.125px */ }
 .click-particle {
   position: fixed;
   width: 8px;
