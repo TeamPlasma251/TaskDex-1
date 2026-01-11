@@ -18,7 +18,7 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
   const taskName = sessionConfig?.taskName || 'Focus Session';
   const sessionType = sessionConfig?.type || 'Fire';
   const isGroupSession = !!groupSessionData;
-  
+
   // State for current session tracking
   const [currentSession, setCurrentSession] = React.useState(1);
   const [isWorkPhase, setIsWorkPhase] = React.useState(true);
@@ -26,31 +26,35 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
   const [isRunning, setIsRunning] = React.useState(true);
   const [completedSessions, setCompletedSessions] = React.useState(0);
   const [timerKey, setTimerKey] = React.useState(0);
-  
+
   // Pokemon encounter state (shown during break)
   const [encounters, setEncounters] = React.useState([]);
   const [expGained, setExpGained] = React.useState(0);
   const [selectedMonIds, setSelectedMonIds] = React.useState([]);
   const [caughtMonIds, setCaughtMonIds] = React.useState([]); // Track which pokemon have been caught
   const [isSaving, setIsSaving] = React.useState(false);
-  
+  const [isSoundEnabled, setIsSoundEnabled] = React.useState(true); // Default to sound enabled
+
   const timerRef = React.useRef(null);
-  
+
   // Refs to track current values
   const currentSessionRef = React.useRef(currentSession);
+  /* original code */
   const isWorkPhaseRef = React.useRef(isWorkPhase);
-  
+  const timeLeftRef = React.useRef(timeLeft);
+
   // Keep refs in sync with state
   React.useEffect(() => {
     currentSessionRef.current = currentSession;
     isWorkPhaseRef.current = isWorkPhase;
-  }, [currentSession, isWorkPhase]);
-  
+    timeLeftRef.current = timeLeft;
+  }, [currentSession, isWorkPhase, timeLeft]);
+
   // Calculate encounters and EXP when work completes (without navigating)
   const calculateEncounters = React.useCallback((durationMinutes, type) => {
     const totalEncounters = Math.floor(durationMinutes / 10);
     const expGain = Math.floor(durationMinutes / 30 * 100);
-    
+
     const wildPokemon = [];
     for (let i = 0; i < totalEncounters; i++) {
       const wildMonData = getRandomWildPokemon(type);
@@ -58,81 +62,94 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
         wildPokemon.push(wildMonData);
       }
     }
-    
+
     return { encounters: wildPokemon, expGain };
   }, []);
-  
+
   // Timer logic
   React.useEffect(() => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-    
+
     if (!isRunning) {
       return;
     }
-    
+
+    const startTime = Date.now();
+    // Use the ref to get the current duration so we don't need timeLeft in dependency array
+    const durationSeconds = timeLeftRef.current;
+    const targetTime = startTime + (durationSeconds * 1000);
+
     timerRef.current = setInterval(() => {
-      setTimeLeft((prevTime) => {
-        const newTime = prevTime - 1;
-        
-        if (newTime <= 0) {
-          if (timerRef.current) {
-            clearInterval(timerRef.current);
-            timerRef.current = null;
-          }
-          
-          setTimeout(() => {
-            const currentPhase = isWorkPhaseRef.current;
-            const currentSessionNum = currentSessionRef.current;
-            
-            if (currentPhase) {
-              // Work phase completed - calculate encounters and start break
-              const { encounters: newEncounters, expGain } = calculateEncounters(workDuration, sessionType);
-              setEncounters(newEncounters);
-              setExpGained(expGain);
-              setSelectedMonIds([]);
-              setCaughtMonIds([]); // Reset caught pokemon for new break
-              
-              // Update EXP without navigating
-              if (handleSessionComplete) {
-                handleSessionComplete(workDuration, sessionType, true);
-              }
-              
-              if (currentSessionNum <= numSessions) {
-                setIsWorkPhase(false);
-                setTimeLeft(breakDuration * 60);
-                setTimerKey(prev => prev + 1);
-                setIsRunning(true);
-              } else {
-                setScreen('MAIN_MENU');
-              }
-            } else {
-              // Break phase completed - mark session complete and move to next
-              if (currentSessionNum < numSessions) {
-                setCompletedSessions(prev => prev + 1);
-                setCurrentSession(prev => prev + 1);
-                setIsWorkPhase(true);
-                setTimeLeft(workDuration * 60);
-                setEncounters([]);
-                setSelectedMonIds([]);
-                setCaughtMonIds([]); // Reset caught pokemon for new session
-                setTimerKey(prev => prev + 1);
-                setIsRunning(true);
-              } else {
-                setCompletedSessions(prev => prev + 1);
-                setScreen('MAIN_MENU');
-              }
-            }
-          }, 0);
-          
-          return 0;
+      const now = Date.now();
+      // Calculate remaining time based on target
+      const newTime = Math.ceil((targetTime - now) / 1000);
+
+      if (newTime <= 0) {
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+          timerRef.current = null;
         }
-        return newTime;
-      });
+
+        // Ensure we show 0
+        setTimeLeft(0);
+
+        setTimeout(() => {
+          const currentPhase = isWorkPhaseRef.current;
+          const currentSessionNum = currentSessionRef.current;
+
+          if (currentPhase) {
+            // Work phase completed - calculate encounters and start break
+            const { encounters: newEncounters, expGain } = calculateEncounters(workDuration, sessionType);
+            setEncounters(newEncounters);
+            setExpGained(expGain);
+            setSelectedMonIds([]);
+            setCaughtMonIds([]); // Reset caught pokemon for new break
+
+            // Update EXP without navigating
+            if (handleSessionComplete) {
+              handleSessionComplete(workDuration, sessionType, true);
+            }
+
+            // Play sound if enabled
+            if (isSoundEnabled) {
+              const audio = new Audio('/sounds/notification.mp3');
+              audio.play().catch(e => console.log('Audio play failed:', e));
+            }
+
+            if (currentSessionNum <= numSessions) {
+              setIsWorkPhase(false);
+              setTimeLeft(breakDuration * 60);
+              setTimerKey(prev => prev + 1);
+              setIsRunning(true);
+            } else {
+              setScreen('MAIN_MENU');
+            }
+          } else {
+            // Break phase completed - mark session complete and move to next
+            if (currentSessionNum < numSessions) {
+              setCompletedSessions(prev => prev + 1);
+              setCurrentSession(prev => prev + 1);
+              setIsWorkPhase(true);
+              setTimeLeft(workDuration * 60);
+              setEncounters([]);
+              setSelectedMonIds([]);
+              setCaughtMonIds([]); // Reset caught pokemon for new session
+              setTimerKey(prev => prev + 1);
+              setIsRunning(true);
+            } else {
+              setCompletedSessions(prev => prev + 1);
+              setScreen('MAIN_MENU');
+            }
+          }
+        }, 0);
+      } else {
+        setTimeLeft(newTime);
+      }
     }, 1000);
-    
+
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
@@ -140,16 +157,16 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
       }
     };
   }, [isRunning, isWorkPhase, timerKey, numSessions, workDuration, breakDuration, sessionType, calculateEncounters, handleSessionComplete, setScreen]);
-  
+
   const handleSkip = () => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-    
+
     const currentPhase = isWorkPhaseRef.current;
     const currentSessionNum = currentSessionRef.current;
-    
+
     if (currentPhase) {
       // Skipping during work: calculate encounters and go to break
       const { encounters: newEncounters, expGain } = calculateEncounters(workDuration, sessionType);
@@ -157,12 +174,12 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
       setExpGained(expGain);
       setSelectedMonIds([]);
       setCaughtMonIds([]); // Reset caught pokemon for new break
-      
+
       // Update EXP without navigating
       if (handleSessionComplete) {
         handleSessionComplete(workDuration, sessionType, true);
       }
-      
+
       setIsWorkPhase(false);
       setTimeLeft(breakDuration * 60);
       setTimerKey(prev => prev + 1);
@@ -170,7 +187,7 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
     } else {
       // Skipping during break: mark session complete and move to next
       setCompletedSessions(prev => prev + 1);
-      
+
       const nextSession = currentSessionNum + 1;
       if (nextSession <= numSessions) {
         setCurrentSession(nextSession);
@@ -186,7 +203,7 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
       }
     }
   };
-  
+
   const handleSelectMon = (index) => {
     // Calculate max based on work duration: 20-29 = 1, 30-39 = 2, 40-50+ = 3
     let maxSelectable = 1;
@@ -195,17 +212,17 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
     } else if (workDuration >= 30) {
       maxSelectable = 2;
     }
-    
+
     // Don't allow selection of already caught pokemon
     if (caughtMonIds.includes(index)) {
       return;
     }
-    
+
     // Don't allow selection if max already reached
     if (caughtMonIds.length >= maxSelectable) {
       return;
     }
-    
+
     setSelectedMonIds(prev => {
       if (prev.includes(index)) {
         return prev.filter(mid => mid !== index);
@@ -215,34 +232,34 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
       return prev;
     });
   };
-  
+
   const handleCatchPokemon = async () => {
     if (selectedMonIds.length === 0 || isSaving || !saveCaughtPokemon) return;
-    
+
     setIsSaving(true);
     const caughtMonNames = encounters
       .filter((_, index) => selectedMonIds.includes(index))
       .map(mon => mon.name);
-    
+
     await saveCaughtPokemon(caughtMonNames, expGained);
     setIsSaving(false);
-    
+
     // Mark these pokemon as caught AFTER successful save
     setCaughtMonIds(prev => [...prev, ...selectedMonIds]);
     setSelectedMonIds([]);
   };
-  
+
   // Status text
-  const statusText = isWorkPhase 
+  const statusText = isWorkPhase
     ? `Work Session ${currentSession}/${numSessions}`
     : `Break Time ${currentSession}/${numSessions}`;
-  
+
   const isBreak = !isWorkPhase;
   const theme = getThemeByType(sessionType);
   const headerColor = isBreak ? 'text-green-600' : theme.accentColor ? `text-[${theme.accentColor}]` : 'text-red-600';
   const totalTime = isBreak ? breakDuration * 60 : workDuration * 60;
   const progress = totalTime > 0 ? (1 - (timeLeft / totalTime)) * 100 : 0;
-  
+
   // Theme background style
   const themeBackgroundStyle = {
     backgroundImage: theme.backgroundImage ? `url(${theme.backgroundImage})` : 'none',
@@ -253,29 +270,29 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
     position: 'relative',
     minHeight: '100vh',
   };
-  
+
   return (
-    <div 
+    <div
       className="flex flex-col items-center min-h-screen p-4 text-white relative"
       style={themeBackgroundStyle}
     >
       {/* Overlay for better text readability */}
       {theme.backgroundImage && (
-        <div 
+        <div
           className="absolute inset-0 z-0"
           style={{ backgroundColor: theme.overlay }}
         ></div>
       )}
-      
+
       <div className={style.card + " max-w-2xl w-full mt-12 relative z-10 bg-white/20 backdrop-blur-xl border-2 border-white/30"}>
         {/* Task Name */}
-        <h2 
+        <h2
           className="text-4xl font-bold mb-6 text-center text-black"
           style={{ color: 'black' }}
         >
           {taskName}
         </h2>
-        
+
         {/* Group Session Info */}
         {isGroupSession && (
           <div className="mb-6 p-3 bg-purple-100 border-2 border-purple-500 rounded-lg text-center">
@@ -287,18 +304,18 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
             </p>
           </div>
         )}
-        
+
         {/* Timer Display */}
         <div className="text-center mb-6">
           <div className="text-8xl font-mono font-extrabold mb-4 text-black bg-white/40 p-6 rounded-lg shadow-inner border-2 border-white/50 backdrop-blur-md">
             {formatTime(timeLeft)}
           </div>
-          
+
           {/* Status Text */}
           <p className="text-gray-900 text-xl mb-4 font-semibold">
             {statusText}
           </p>
-          
+
           {/* Visual Tracker Dots */}
           <div className="flex justify-center items-center space-x-2 mb-4">
             {Array.from({ length: numSessions }, (_, i) => {
@@ -315,18 +332,18 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
             })}
           </div>
         </div>
-        
+
         {/* Progress Bar */}
         <div className="w-full bg-gray-300 rounded-full h-3 mb-8">
-          <div 
-            className="h-3 rounded-full transition-all duration-300" 
-            style={{ 
+          <div
+            className="h-3 rounded-full transition-all duration-300"
+            style={{
               width: `${progress}%`,
               backgroundColor: isBreak ? '#16a34a' : theme.accentColor
             }}
           ></div>
         </div>
-        
+
         {/* Pokemon Selection (only during break) */}
         {isBreak && encounters.length > 0 && (
           <div className="mb-6 p-4 bg-gray-50 rounded-lg border-2 border-gray-300">
@@ -337,12 +354,12 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
               } else if (workDuration >= 30) {
                 maxSelectable = 2;
               }
-              
+
               return (
                 <>
                   <h3 className="text-xl font-bold mb-3 text-center text-black">Wild Pokémon Encounter ({encounters.length} Found)</h3>
                   <p className="text-sm text-black mb-4 text-center">Select up to {maxSelectable} Pokémon to catch</p>
-                  
+
                   {caughtMonIds.length >= maxSelectable && (
                     <div className="mb-4 p-3 bg-yellow-100 border-2 border-yellow-500 rounded-lg text-center text-yellow-800 font-semibold">
                       You've caught the maximum {maxSelectable} Pokémon!
@@ -351,7 +368,7 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
                 </>
               );
             })()}
-            
+
             <div className="grid grid-cols-3 gap-4 mb-4">
               {encounters.map((mon, index) => {
                 const isSelected = selectedMonIds.includes(index);
@@ -360,17 +377,16 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
                 const typeBorderClass = getTypeBorderColor(mon.type);
                 const typeBgClass = getTypeBgColor(mon.type);
                 const typeRingClass = getTypeRingColor(mon.type);
-                
+
                 return (
                   <div
                     key={index}
-                    className={`p-3 rounded-lg transition-all duration-200 border-2 relative ${
-                      isCaught
-                        ? 'border-gray-400 bg-gray-200 opacity-60 cursor-not-allowed'
-                        : isSelected
+                    className={`p-3 rounded-lg transition-all duration-200 border-2 relative ${isCaught
+                      ? 'border-gray-400 bg-gray-200 opacity-60 cursor-not-allowed'
+                      : isSelected
                         ? `cursor-pointer ${typeBorderClass} ${typeBgClass} ring-4 ${typeRingClass}`
                         : `cursor-pointer border-gray-300 bg-white ${typeHoverClass} hover:ring-2`
-                    }`}
+                      }`}
                     onClick={() => !isCaught && handleSelectMon(index)}
                   >
                     {/* Tick mark for caught pokemon */}
@@ -392,7 +408,7 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
                 );
               })}
             </div>
-            
+
             {selectedMonIds.length > 0 && (
               <button
                 className={style.button + " bg-green-600 text-white hover:bg-green-700 w-full"}
@@ -404,7 +420,7 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
             )}
           </div>
         )}
-        
+
         {/* Controls */}
         <div className="flex justify-center space-x-4">
           <button
@@ -424,6 +440,18 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
             onClick={() => setScreen('MAIN_MENU')}
           >
             End
+          </button>
+
+          <button
+            className={`${style.button} ${isSoundEnabled ? 'bg-blue-500' : 'bg-gray-500'} text-white hover:opacity-90 flex items-center justify-center`}
+            onClick={() => setIsSoundEnabled(!isSoundEnabled)}
+            title={isSoundEnabled ? "Mute Sound" : "Enable Sound"}
+          >
+            {isSoundEnabled ? (
+              <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0z" fill="none" /><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" /></svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0z" fill="none" /><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" /></svg>
+            )}
           </button>
         </div>
       </div>
